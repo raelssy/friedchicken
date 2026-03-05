@@ -4,51 +4,51 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-0">Manajemen Inventaris</h3>
-            <p class="text-muted small">Kelola ketersediaan menu siap jual dan stok bahan baku mentah.</p>
+            <h4 class="fw-bold mb-0">Manajemen Inventaris</h4>
+            <p class="text-muted small">Kelola stok produk siap jual dan bahan baku mentah</p>
         </div>
-    </div>
+        </div>
 
     @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
             <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
 
-    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+    <ul class="nav nav-tabs border-0 mb-3" id="stokTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active me-2 shadow-sm" id="pills-menu-tab" data-bs-toggle="pill" data-bs-target="#pills-menu" type="button" role="tab">
-                <i class="fas fa-utensils me-2"></i>Stok Menu (Siap Jual)
+            <button class="nav-link active fw-bold px-4 border-0" id="menu-tab" data-bs-toggle="tab" data-bs-target="#menu-panel" type="button" role="tab">
+                <i class="fas fa-utensils me-2"></i>Stok Menu
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link btn-outline-success shadow-sm" id="pills-bahan-tab" data-bs-toggle="pill" data-bs-target="#pills-bahan" type="button" role="tab">
-                <i class="fas fa-box me-2"></i>Stok Bahan (Mentah)
+            <button class="nav-link fw-bold px-4 border-0" id="bahan-tab" data-bs-toggle="tab" data-bs-target="#bahan-panel" type="button" role="tab">
+                <i class="fas fa-box me-2"></i>Stok Bahan Mentah
             </button>
         </li>
     </ul>
 
-    <div class="tab-content" id="pills-tabContent">
+    <div class="tab-content pt-2" id="stokTabContent">
         
-        <div class="tab-pane fade show active" id="pills-menu" role="tabpanel">
-            <div class="card shadow-sm border-0">
+        <div class="tab-pane fade show active" id="menu-panel" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-3">
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-3">Nama Menu</th>
-                                    <th>Kategori</th>
-                                    <th class="text-center">Sisa Stok</th>
-                                    <th class="text-end pe-3">Aksi</th>
+                                    <th class="ps-3 py-3 small uppercase">Nama Menu</th>
+                                    <th class="py-3 small uppercase">Kategori</th>
+                                    <th class="py-3 small uppercase text-center">Tersedia</th>
+                                    <th class="py-3 small uppercase text-end pe-3">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($menu as $m)
                                 <tr>
                                     <td class="ps-3 fw-bold">{{ $m->nama_menu }}</td>
-                                    <td><span class="badge bg-info text-dark opacity-75">{{ $m->kategori }}</span></td>
+                                    <td><span class="badge bg-light text-dark border">{{ $m->kategori }}</span></td>
                                     <td class="text-center">
                                         @if($m->stok <= 5)
                                             <span class="badge bg-danger">Hampir Habis: {{ $m->stok }}</span>
@@ -57,8 +57,8 @@
                                         @endif
                                     </td>
                                     <td class="text-end pe-3">
-                                        <a href="{{ route('menu.edit', $m->id) }}" class="btn btn-sm btn-warning text-white">
-                                            <i class="fas fa-sync-alt me-1"></i> Update Stok
+                                        <a href="{{ route('menu.edit', $m->id) }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="fas fa-edit"></i> Edit Stok
                                         </a>
                                     </td>
                                 </tr>
@@ -70,11 +70,11 @@
             </div>
         </div>
 
-        <div class="tab-pane fade" id="pills-bahan" role="tabpanel">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                    <span class="fw-bold text-success"><i class="fas fa-boxes me-2"></i>Daftar Bahan Mentah</span>
-                    <a href="{{ route('stok.bahan.create') }}" class="btn btn-success btn-sm shadow-sm px-3">
+        <div class="tab-pane fade" id="bahan-panel" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0 fw-bold text-success">Daftar Bahan Baku</h6>
+                    <a href="{{ route('stok.bahan.create') }}" class="btn btn-success btn-sm px-3 shadow-sm">
                         <i class="fas fa-plus me-1"></i> Tambah Bahan
                     </a>
                 </div>
@@ -83,18 +83,18 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="ps-3">Nama Bahan</th>
-                                    <th>Jumlah</th>
-                                    <th>Satuan</th>
-                                    <th class="text-end pe-3">Aksi</th>
+                                    <th class="ps-3 py-3 small uppercase">Nama Bahan</th>
+                                    <th class="py-3 small uppercase">Jumlah</th>
+                                    <th class="py-3 small uppercase">Satuan</th>
+                                    <th class="py-3 small uppercase text-end pe-3">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($bahan as $b)
                                 <tr>
                                     <td class="ps-3 fw-bold">{{ $b->nama_bahan }}</td>
-                                    <td><span class="badge bg-success px-3">{{ $b->jumlah }}</span></td>
-                                    <td><span class="text-muted">{{ $b->satuan }}</span></td>
+                                    <td><span class="fw-bold text-success">{{ $b->jumlah }}</span></td>
+                                    <td><span class="text-muted small">{{ $b->satuan }}</span></td>
                                     <td class="text-end pe-3">
                                         <a href="{{ route('stok.bahan.edit', $b->id) }}" class="btn btn-sm btn-outline-primary me-1">
                                             <i class="fas fa-pencil-alt"></i>
@@ -110,8 +110,9 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center py-4 text-muted">
-                                        Belum ada data bahan mentah.
+                                    <td colspan="4" class="text-center py-5 text-muted small">
+                                        Belum ada data bahan mentah. <br>
+                                        <a href="{{ route('stok.bahan.create') }}" class="text-success text-decoration-none">Klik di sini untuk menambah.</a>
                                     </td>
                                 </tr>
                                 @endforelse
@@ -126,21 +127,24 @@
 </div>
 
 <style>
-    .nav-pills .nav-link {
+    /* Styling agar tab terlihat lebih modern */
+    .nav-tabs .nav-link {
         color: #6c757d;
-        border: 1px solid transparent;
+        background: none;
     }
-    .nav-pills .nav-link.active {
-        background-color: #0d6efd;
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 3px solid #0d6efd !important;
+        background: none;
     }
-    .nav-pills .nav-link.btn-outline-success:not(.active) {
-        border-color: #198754;
+    #stokTab .nav-link#bahan-tab.active {
         color: #198754;
+        border-bottom: 3px solid #198754 !important;
     }
-    .nav-pills .nav-link.btn-outline-success.active {
-        background-color: #198754;
-        border-color: #198754;
-        color: white;
+    .table thead th {
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #6c757d;
     }
 </style>
 @endsection

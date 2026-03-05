@@ -6,14 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Transaksi extends Model
 {
+    protected $table = 'transaksis'; // Memastikan Laravel memakai tabel yang ada 's' nya
+
     protected $fillable = [
         'cabang_id',
+        'menu_id',
+        'qty',
         'tanggal',
         'total'
     ];
 
-    public function detail()
-    {
-        return $this->hasMany(DetailTransaksi::class);
-    }
+ 
+    public function menu()
+{
+    return $this->belongsTo(Menu::class, 'menu_id');
+}
 }

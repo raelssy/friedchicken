@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>POS Fried Chicken</title>
+    <title>FnB Fried Chicken</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
