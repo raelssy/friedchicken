@@ -30,11 +30,15 @@ Route::middleware(['auth'])->group(function () {
     // Stok
     Route::resource('stok', StokController::class);
     // Route untuk menampilkan halaman form (Create)
-Route::get('/stok/bahan/create', [App\Http\Controllers\StokController::class, 'createBahan'])->name('stok.bahan.create');
 
-// Route untuk memproses penyimpanan data (Store)
-Route::post('/stok/bahan/store', [App\Http\Controllers\StokController::class, 'storeBahan'])->name('stok.bahan.store');
-    
+    // Route untuk manajemen Stok Bahan
+    Route::get('/stok/bahan/create', [KasirController::class, 'createBahan'])->name('stok.bahan.create');
+    Route::post('/stok/bahan/store', [KasirController::class, 'storeBahan'])->name('stok.bahan.store');
+
+    // TAMBAHKAN INI:
+    Route::get('/stok/bahan/{id}/edit', [KasirController::class, 'editBahan'])->name('stok.bahan.edit');
+    Route::put('/stok/bahan/{id}', [KasirController::class, 'updateBahan'])->name('stok.bahan.update');
+    Route::delete('/stok/bahan/{id}', [KasirController::class, 'destroyBahan'])->name('stok.bahan.destroy');
     
     //kasir
     Route::resource('kasir', KasirController::class);
