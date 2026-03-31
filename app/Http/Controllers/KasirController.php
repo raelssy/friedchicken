@@ -126,6 +126,13 @@ class KasirController extends Controller
         return redirect()->back()->with('success', 'Bahan mentah berhasil ditambahkan!');
     }
 
+
+    
+    public function createBahan()
+    {
+        // Mengarahkan ke file resources/views/bahan/create.blade.php
+        return view('bahan.create');
+    }
    /**
  * Menampilkan Form Edit Bahan
  */

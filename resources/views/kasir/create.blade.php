@@ -1,79 +1,186 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-5">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+    body {
+        background-color: #f4f7f6;
+        font-family: 'Montserrat', sans-serif;
+    }
+
+    /* Header & Card Styling */
+    .card-kasir {
+        border-radius: 20px;
+        border: none;
+        overflow: hidden;
+    }
+
+    .card-header-kfc {
+        background: linear-gradient(135deg, #e4002b 0%, #b30022 100%);
+        color: white;
+        padding: 25px;
+        border-bottom: 5px solid #ffc107; /* Aksen Kuning */
+    }
+
+    .card-header-kfc h4 {
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    /* Form Elements */
+    .form-label-custom {
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #666;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .input-kfc {
+        border-radius: 12px !important;
+        border: 2px solid #eee !important;
+        padding: 12px 15px !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .input-kfc:focus {
+        border-color: #ffc107 !important;
+        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.15) !important;
+        background-color: #fff;
+    }
+
+    /* Total Section */
+    .total-box {
+        background-color: #fff3cd;
+        border: 2px dashed #ffc107;
+        border-radius: 12px;
+        padding: 15px;
+    }
+
+    .display-total {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #e4002b;
+        margin: 0;
+    }
+
+    /* Button Styling */
+    .btn-kfc-red {
+        background-color: #e4002b;
+        border: none;
+        color: white;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 15px 35px;
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+
+    .btn-kfc-red:hover {
+        background-color: #b30022;
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(228, 0, 43, 0.2);
+    }
+
+    .btn-kfc-red:disabled {
+        background-color: #ccc;
+        transform: none;
+    }
+
+    /* Animation */
+    @keyframes pulse-yellow {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+    }
+    .stok-aman { color: #198754; font-size: 12px; }
+    .stok-bahaya { color: #dc3545; font-size: 12px; animation: pulse-yellow 1s infinite; }
+</style>
+
+<div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-lg-7 col-md-10">
 
             @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4 rounded-4" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-exclamation-triangle me-3 fa-lg"></i>
-                        <div>
-                            <strong>Gagal Simpan!</strong> {{ session('error') }}
-                        </div>
+                        <i class="fas fa-times-circle me-3 fs-4"></i>
+                        <div><strong>Gagal!</strong> {{ session('error') }}</div>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
 
-            <div class="card border-0 shadow-lg rounded-4">
-                <div class="card-header bg-primary text-white p-4 rounded-top-4">
-                    <h4 class="mb-0"><i class="fas fa-cart-plus me-2"></i> Input Transaksi Baru</h4>
+            <div class="card card-kasir shadow-lg">
+                <div class="card-header card-header-kfc text-center">
+                    <h4 class="mb-0"><i class="fas fa-cash-register me-2 text-warning"></i> POS - KASIR</h4>
+                    <p class="small mb-0 opacity-75 fw-semibold mt-1">Sistem Input Penjualan Real-Time</p>
                 </div>
-                <div class="card-body p-4">
-                    
+
+                <div class="card-body p-4 p-md-5">
                     <form action="{{ route('kasir.store') }}" method="POST">
                         @csrf
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Pilih Cabang</label>
-                            <select name="cabang_id" class="form-select form-select-lg shadow-sm" required>
-                                <option value="" selected disabled>-- Pilih Cabang Transaksi --</option>
-                                @foreach($cabang as $c)
-                                    <option value="{{ $c->id }}">{{ $c->nama_cabang }}</option>
-                                @endforeach
-                            </select>
+                        <div class="mb-4">
+                            <label class="form-label-custom">Lokasi Transaksi</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-2 border-end-0 rounded-start-3"><i class="fas fa-store text-danger"></i></span>
+                                <select name="cabang_id" class="form-select input-kfc border-start-0" required>
+                                    <option value="" selected disabled>-- Pilih Cabang --</option>
+                                    @foreach($cabang as $c)
+                                        <option value="{{ $c->id }}">{{ $c->nama_cabang }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Pilih Menu</label>
-                            <select name="menu_id" id="menu_id" class="form-select form-select-lg shadow-sm" required>
-                                <option value="" selected disabled>-- Cari Menu --</option>
-                                @foreach($menu as $m)
-                                    {{-- Penting: Atribut data-stok dan data-harga digunakan untuk Javascript --}}
-                                    <option value="{{ $m->id }}" data-harga="{{ $m->harga }}" data-stok="{{ $m->stok }}">
-                                        {{ $m->nama_menu }} — Rp {{ number_format($m->harga, 0, ',', '.') }} (Sisa Stok: {{ $m->stok }})
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="mb-4">
+                            <label class="form-label-custom">Menu Pesanan</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-2 border-end-0 rounded-start-3"><i class="fas fa-utensils text-danger"></i></span>
+                                <select name="menu_id" id="menu_id" class="form-select input-kfc border-start-0" required>
+                                    <option value="" selected disabled>-- Ketik atau Cari Menu --</option>
+                                    @foreach($menu as $m)
+                                        <option value="{{ $m->id }}" data-harga="{{ $m->harga }}" data-stok="{{ $m->stok }}">
+                                            {{ $m->nama_menu }} — Rp {{ number_format($m->harga, 0, ',', '.') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Jumlah (Qty)</label>
-                                <input type="number" name="qty" id="qty" class="form-control form-control-lg shadow-sm" min="1" value="1" required>
-                                <div id="stok_warning" class="small mt-1 fw-bold"></div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label-custom">Kuantitas (Qty)</label>
+                                <input type="number" name="qty" id="qty" class="form-control input-kfc text-center fs-5 shadow-sm" min="1" value="1" required>
+                                <div id="stok_warning" class="mt-2 text-center fw-bold"></div>
                             </div>
 
-                            <div class="col-md-8 mb-3">
-                                <label class="form-label fw-bold">Total Pembayaran</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light fw-bold">Rp</span>
-                                    <input type="text" id="total_display" class="form-control form-control-lg bg-white fw-bold text-primary" readonly>
+                            <div class="col-md-8">
+                                <label class="form-label-custom">Ringkasan Total</label>
+                                <div class="total-box text-center shadow-sm">
+                                    <span class="small fw-bold text-muted d-block mb-1">TOTAL BAYAR (IDR)</span>
+                                    <h2 id="total_display" class="display-total">0</h2>
                                     <input type="hidden" name="total" id="total_input">
                                 </div>
                             </div>
                         </div>
 
-                        <hr>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('kasir.index') }}" class="btn btn-light px-4">Batal</a>
-                            <button type="submit" id="btn-submit" class="btn btn-primary btn-lg px-5 shadow">Simpan Transaksi</button>
+                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-5">
+                            <a href="{{ route('kasir.index') }}" class="text-decoration-none text-muted fw-bold order-2 order-md-1">
+                                <i class="fas fa-times me-1 text-danger"></i> Batalkan Pesanan
+                            </a>
+                            <button type="submit" id="btn-submit" class="btn btn-kfc-red px-5 shadow order-1 order-md-2 w-100 w-md-auto">
+                                <i class="fas fa-check-circle me-2"></i> Proses Transaksi
+                            </button>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
@@ -88,30 +195,36 @@
     const stokWarning = document.getElementById('stok_warning');
     const btnSubmit = document.getElementById('btn-submit');
 
+    function formatRupiah(number) {
+        return new Intl.NumberFormat('id-ID', {
+            minimumFractionDigits: 0
+        }).format(number);
+    }
+
     function hitungDanValidasi() {
+        if (menuSelect.selectedIndex <= 0) return;
+
         const selectedOption = menuSelect.options[menuSelect.selectedIndex];
-        
-        // Ambil data dari atribut 'data-' di option yang dipilih
-        const harga = selectedOption.getAttribute('data-harga') || 0;
+        const harga = parseInt(selectedOption.getAttribute('data-harga')) || 0;
         const stokTersedia = parseInt(selectedOption.getAttribute('data-stok')) || 0;
         const qtyDiminta = parseInt(qtyInput.value) || 0;
 
-        // 1. Hitung Total Harga
+        // Hitung Total
         const total = harga * qtyDiminta;
-        totalDisplay.value = new Intl.NumberFormat('id-ID').format(total);
+        totalDisplay.innerText = formatRupiah(total);
         totalInput.value = total;
 
-        // 2. Cek apakah Qty melebihi stok yang ada
-        if (menuSelect.value !== "") {
-            if (qtyDiminta > stokTersedia) {
-                stokWarning.innerHTML = `<span class="text-danger"><i class="fas fa-times-circle"></i> Stok tidak cukup! Maksimal: ${stokTersedia}</span>`;
-                qtyInput.classList.add('is-invalid');
-                btnSubmit.disabled = true; // Kunci tombol simpan jika stok kurang
-            } else {
-                stokWarning.innerHTML = `<span class="text-success"><i class="fas fa-check-circle"></i> Stok tersedia</span>`;
-                qtyInput.classList.remove('is-invalid');
-                btnSubmit.disabled = false; // Buka tombol simpan jika stok aman
-            }
+        // Validasi Stok
+        if (qtyDiminta > stokTersedia) {
+            stokWarning.innerHTML = `<span class="stok-bahaya"><i class="fas fa-times-circle me-1"></i> Stok Terbatas (${stokTersedia})</span>`;
+            qtyInput.style.borderColor = "#dc3545";
+            btnSubmit.disabled = true;
+        } else if (qtyDiminta > 0) {
+            stokWarning.innerHTML = `<span class="stok-aman"><i class="fas fa-check-circle me-1"></i> Tersedia (${stokTersedia})</span>`;
+            qtyInput.style.borderColor = "#eee";
+            btnSubmit.disabled = false;
+        } else {
+            btnSubmit.disabled = true;
         }
     }
 
