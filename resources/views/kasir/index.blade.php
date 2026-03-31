@@ -19,7 +19,7 @@
                         <th>Tanggal</th>
                         <th>Menu</th> <th class="text-center">Jumlah Item</th> 
                         <th>Total Bayar</th>
-                        <th class="text-end pe-3">Aksi</th>
+                      
                     </tr>
                 </thead>
 
@@ -37,11 +37,7 @@
                             </span>
                         </td>
                         <td class="fw-bold text-success">Rp {{ number_format($t->total) }}</td>
-                        <td class="text-end pe-3">
-                            <a href="/kasir/edit/{{ $t->id }}" class="btn btn-warning btn-sm text-white">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-                        </td>
+                        
                     </tr>
                     @endforeach
                 </tbody>
