@@ -1,52 +1,64 @@
-<x-guest-layout>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-orange-100 to-orange-300 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+    
+    <h2 class="text-2xl font-bold text-center text-orange-600 mb-2">
+        🍗 Register Admin
+    </h2>
+    <p class="text-center text-gray-500 mb-6">
+        Buat akun admin pertama
+    </p>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+        <div class="mb-4">
+            <label class="text-sm text-gray-600">Nama</label>
+            <input type="text" name="name"
+                class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-orange-400"
+                required>
         </div>
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+        <div class="mb-4">
+            <label class="text-sm text-gray-600">Email</label>
+            <input type="email" name="email"
+                class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-orange-400"
+                required>
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div class="mb-4">
+            <label class="text-sm text-gray-600">Password</label>
+            <input type="password" name="password"
+                class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-orange-400"
+                required>
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <div class="mb-4">
+            <label class="text-sm text-gray-600">Konfirmasi Password</label>
+            <input type="password" name="password_confirmation"
+                class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-orange-400"
+                required>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
+        <button type="submit"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg transition">
+            Register
+        </button>
     </form>
-</x-guest-layout>
+
+    <p class="text-center text-sm text-gray-500 mt-4">
+        Sudah punya akun?
+        <a href="{{ route('login') }}" class="text-orange-600 font-semibold">Login</a>
+    </p>
+
+</div>
+
+</body>
+</html>

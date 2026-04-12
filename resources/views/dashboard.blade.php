@@ -134,8 +134,29 @@
             <h2 class="dashboard-title">Manajer Toko</h2>
             <p class="text-muted small fw-bold mb-0">Pantau Penjualan & Stok Real-Time</p>
         </div>
-        <div class="fw-bold text-danger">
-            <i class="far fa-calendar-alt me-1"></i> {{ date('l, d M Y') }}
+
+        <div class="d-flex align-items-center gap-3">
+            <!-- TANGGAL -->
+            <div class="fw-bold text-danger">
+                <i class="far fa-calendar-alt me-1"></i> {{ date('l, d M Y') }}
+            </div>
+
+            <!-- 🔥 LOGOUT BUTTON -->
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button style="
+                    background:#e4002b;
+                    color:white;
+                    border:none;
+                    padding:6px 12px;
+                    border-radius:8px;
+                    font-size:12px;
+                    font-weight:600;
+                    cursor:pointer;
+                ">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </form>
         </div>
     </div>
 

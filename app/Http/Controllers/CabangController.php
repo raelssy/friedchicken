@@ -21,8 +21,19 @@ class CabangController extends Controller
 
     public function store(Request $request)
     {
-        Cabang::create($request->all());
-        return redirect('/cabang');
+        $request->validate([
+            'nama_cabang' => 'required',
+            'alamat' => 'required',
+            'telepon' => 'required'
+        ]);
+
+        Cabang::create($request->only([
+            'nama_cabang',
+            'alamat',
+            'telepon'
+        ]));
+
+        return redirect()->route('cabang.index');
     }
 
     public function edit($id)

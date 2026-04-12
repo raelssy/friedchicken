@@ -9,15 +9,13 @@ return new class extends Migration
 
     public function up(): void
     {
-        
-
-       Schema::create('transaksis', function (Blueprint $table) {
-    $table->id();
-    $table->foreignId('cabang_id')->constrained('cabangs'); 
-    $table->date('tanggal');
-    $table->integer('total');
-    $table->timestamps();
-});
+        Schema::create('transaksis', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('cabang_id')->nullable();
+            $table->date('tanggal');
+            $table->integer('total')->default(0);
+            $table->timestamps();
+        });
     }
 
 

@@ -6,14 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up(): void
+public function up(): void
 {
-    // Cek dulu apakah kolom cabang_id sudah ada
-    if (!Schema::hasColumn('menu', 'cabang_id')) {
-        Schema::table('menu', function (Blueprint $table) {
-            $table->bigInteger('cabang_id')->unsigned()->after('id');
-        });
-    }
+    Schema::create('cabangs', function (Blueprint $table) {
+        $table->id();
+        $table->string('nama_cabang');
+        $table->string('alamat');
+        $table->string('telepon');
+        $table->timestamps();
+    });
 }
 
     /**
