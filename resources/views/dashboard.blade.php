@@ -11,7 +11,6 @@
         color: #333;
     }
 
-    /* Header Dashboard */
     .dashboard-header {
         border-bottom: 4px solid #e4002b;
         padding-bottom: 15px;
@@ -26,7 +25,6 @@
         margin: 0;
     }
 
-    /* Kartu Statistik Utama */
     .card-kfc {
         border-radius: 15px;
         border: none;
@@ -58,7 +56,6 @@
         margin-top: 5px;
     }
 
-    /* --- BAGIAN SHORTCUTS --- */
     .judul-shortcut {
         font-weight: 800;
         text-transform: uppercase;
@@ -136,12 +133,10 @@
         </div>
 
         <div class="d-flex align-items-center gap-3">
-            <!-- TANGGAL -->
             <div class="fw-bold text-danger">
                 <i class="far fa-calendar-alt me-1"></i> {{ date('l, d M Y') }}
             </div>
 
-            <!-- 🔥 LOGOUT BUTTON -->
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button style="
@@ -165,81 +160,106 @@
             <div class="card-kfc bg-merah-kfc shadow-sm">
                 <div class="stats-label">Pendapatan Hari Ini</div>
                 <div class="stats-number">Rp {{ number_format($totalPenjualan, 0, ',', '.') }}</div>
-                <i class="fas fa-wallet" style="position:absolute; right:15px; bottom:15px; font-size:3rem; opacity:0.1;"></i>
             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card-kfc bg-hitam-kfc shadow-sm">
                 <div class="stats-label">Total Transaksi</div>
                 <div class="stats-number">{{ $totalTransaksi }} Pesanan</div>
-                <i class="fas fa-receipt" style="position:absolute; right:15px; bottom:15px; font-size:3rem; opacity:0.1;"></i>
             </div>
         </div>
         <div class="col-md-4 mb-3">
             <div class="card-kfc bg-merah-kfc shadow-sm">
                 <div class="stats-label">Porsi Terjual</div>
                 <div class="stats-number">{{ $menuTerjual }} Produk</div>
-                <i class="fas fa-drumstick-bite" style="position:absolute; right:15px; bottom:15px; font-size:3rem; opacity:0.1;"></i>
             </div>
         </div>
     </div>
 
-    <h5 class="judul-shortcut">Akses Cepat Layanan</h5>
-    
-    <div class="row g-4">
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ route('kasir.create') }}" class="shortcut-item">
-                <div class="lingkaran-ikon">
-                    <i class="fas fa-cash-register"></i>
-                </div>
-                <span class="label-shortcut">Transaksi Baru</span>
-            </a>
-        </div>
+    <h5 class="judul-shortcut">
+    @if(auth()->user()->role == 'cabang')
+        Pilih Mode Kerja
+    @else
+        Akses Cepat Layanan
+    @endif
+</h5>
 
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ route('kasir.index') }}" class="shortcut-item">
-                <div class="lingkaran-ikon">
-                    <i class="fas fa-history"></i>
-                </div>
-                <span class="label-shortcut">Riwayat Kasir</span>
-            </a>
-        </div>
+{{-- ================= CABANG ================= --}}
+@if(auth()->user()->role == 'cabang')
 
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ url('/menu') }}" class="shortcut-item">
-                <div class="lingkaran-ikon">
-                    <i class="fas fa-utensils"></i>
-                </div>
-                <span class="label-shortcut">Kelola Menu</span>
-            </a>
-        </div>
+<div class="row g-4">
 
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ url('/stok') }}" class="shortcut-item">
-                <div class="lingkaran-ikon">
-                    <i class="fas fa-boxes-stacked"></i>
-                </div>
-                <span class="label-shortcut">Cek Stok</span>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ url('/laporan') }}" class="shortcut-item">
-                <div class="lingkaran-ikon">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                </div>
-                <span class="label-shortcut">Laporan Keuangan</span>
-            </a>
-        </div>
-
-        <div class="col-6 col-md-4 col-lg-2">
-            <a href="{{ url('/cabang') }}" class="shortcut-item">
-                <div class="lingkaran-ikon">
-                    <i class="fas fa-store"></i>
-                </div>
-                <span class="label-shortcut">Data Cabang</span>
-            </a>
-        </div>
+    <!-- MODE KASIR -->
+    <div class="col-md-6">
+        <a href="{{ route('kasir.create') }}" class="shortcut-item" style="height:130px;">
+            <div class="lingkaran-ikon">
+                <i class="fas fa-cash-register"></i>
+            </div>
+            <span class="label-shortcut">Mode Kasir</span>
+            <small class="text-muted">Transaksi Penjualan</small>
+        </a>
     </div>
+
+    <!-- MODE STOK -->
+    <div class="col-md-6">
+        <a href="{{ url('/stok') }}" class="shortcut-item" style="height:130px;">
+            <div class="lingkaran-ikon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <span class="label-shortcut">Kelola Stok</span>
+            <small class="text-muted">Update Stok Cabang</small>
+        </a>
+    </div>
+
 </div>
-@endsection
+
+{{-- ================= ADMIN ================= --}}
+@else
+
+<div class="row g-4">
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('kasir.create') }}" class="shortcut-item">
+            <div class="lingkaran-ikon"><i class="fas fa-cash-register"></i></div>
+            <span class="label-shortcut">Transaksi Baru</span>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('kasir.index') }}" class="shortcut-item">
+            <div class="lingkaran-ikon"><i class="fas fa-history"></i></div>
+            <span class="label-shortcut">Riwayat Kasir</span>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url('/stok') }}" class="shortcut-item">
+            <div class="lingkaran-ikon"><i class="fas fa-boxes-stacked"></i></div>
+            <span class="label-shortcut">Cek Stok</span>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url('/menu') }}" class="shortcut-item">
+            <div class="lingkaran-ikon"><i class="fas fa-utensils"></i></div>
+            <span class="label-shortcut">Kelola Menu</span>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ url('/cabang') }}" class="shortcut-item">
+            <div class="lingkaran-ikon"><i class="fas fa-store"></i></div>
+            <span class="label-shortcut">Data Cabang</span>
+        </a>
+    </div>
+
+    <div class="col-6 col-md-4 col-lg-2">
+        <a href="{{ route('user.create') }}" class="shortcut-item">
+            <div class="lingkaran-ikon"><i class="fas fa-user-plus"></i></div>
+            <span class="label-shortcut">User Cabang</span>
+        </a>
+    </div>
+
+</div>
+
+@endif

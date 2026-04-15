@@ -37,7 +37,7 @@ return new class extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
             $table->string('role')->default('cabang');
-            // $table->foreignId('cabang_id')->nullable()->constrained('cabangs')->nullOnDelete();
+             $table->foreignId('cabang_id')->nullable()->constrained('cabangs')->nullOnDelete();
         });
     }
 

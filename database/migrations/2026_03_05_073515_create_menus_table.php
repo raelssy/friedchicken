@@ -6,25 +6,25 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up()
-{
-    Schema::create('menu', function (Blueprint $table) {
-        $table->id();
-        $table->string('nama_menu');
-        $table->integer('harga');
-        $table->string('kategori');
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('menu', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_menu');
+            $table->integer('harga');
+            $table->string('kategori')->nullable();
 
-    /**
-     * Reverse the migrations.
-     */
+            // 🔥 WAJIB untuk multi cabang
+            $table->foreignId('cabang_id')
+                  ->constrained('cabangs')
+                  ->cascadeOnDelete();
+
+            $table->timestamps();
+        });
+    }
+
     public function down(): void
     {
-        Schema::dropIfExists('menus');
+        Schema::dropIfExists('menu'); // ✅ FIX
     }
 };

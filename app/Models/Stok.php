@@ -17,4 +17,5 @@ class Stok extends Model
     {
         return $this->belongsTo(Cabang::class);
     }
+    
 }

@@ -121,7 +121,7 @@
             </div>
 
             <div class="card-body p-4">
-                <form action="/cabang/store" method="POST">
+                <form action="{{ route('cabang.store') }}" method="POST">
                     @csrf
 
                     <div class="mb-3">

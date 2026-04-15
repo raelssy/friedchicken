@@ -28,14 +28,8 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        $user = Auth::user();
-
-        // 🔥 redirect berdasarkan role
-        if ($user->role === 'admin') {
-            return redirect()->route('dashboard');
-        } else {
-            return redirect()->route('kasir.index');
-        }
+        // 🔥 SEMUA ROLE KE DASHBOARD
+        return redirect()->route('dashboard');
     }
 
     /**
