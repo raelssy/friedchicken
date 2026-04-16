@@ -13,6 +13,7 @@ return new class extends Migration
             $table->string('nama_menu');
             $table->integer('harga');
             $table->string('kategori')->nullable();
+            $table->integer('stok')->default(0);
 
             // 🔥 WAJIB untuk multi cabang
             $table->foreignId('cabang_id')

@@ -64,6 +64,9 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/stok/bahan/{id}', [KasirController::class, 'updateBahan'])->name('stok.bahan.update');
     Route::delete('/stok/bahan/{id}', [KasirController::class, 'destroyBahan'])->name('stok.bahan.destroy');
 
+    Route::get('/menu/{id}/stok', [MenuController::class, 'editStok'])->name('menu.stok.edit');
+    Route::put('/menu/{id}/stok', [MenuController::class, 'updateStok'])->name('menu.stok.update');
+
 });
 
 /*
