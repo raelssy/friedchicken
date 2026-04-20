@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Menu;
 use App\Models\Cabang;
+use App\Models\Resep;
+use App\Models\Bahan;
 use Illuminate\Support\Facades\Auth;
 
 class MenuController extends Controller
@@ -164,13 +166,41 @@ class MenuController extends Controller
         }
 
         $request->validate([
-            'stok' => 'required|integer|min:0'
+            'stok' => 'required|integer|min:1'
         ]);
 
-        $menu->stok += $request->stok;
+        $jumlahTambah = $request->stok;
+
+        // 🔥 ambil resep menu
+        $reseps = Resep::where('menu_id', $menu->id)->get();
+
+        foreach ($reseps as $resep) {
+
+            $bahan = Bahan::where('id', $resep->bahan_id)
+                        ->where('cabang_id', $menu->cabang_id)
+                        ->first();
+
+            if (!$bahan) {
+                return back()->with('error', 'Bahan tidak ditemukan');
+            }
+
+            $total = $resep->jumlah * $jumlahTambah;
+
+            // ❌ kalau stok bahan kurang
+            if ($bahan->jumlah < $total) {
+                return back()->with('error', 'Stok bahan tidak cukup: ' . $bahan->nama_bahan);
+            }
+
+            // 🔥 kurangi bahan
+            $bahan->jumlah -= $total;
+            $bahan->save();
+        }
+
+        // 🔥 tambah stok menu
+        $menu->stok += $jumlahTambah;
         $menu->save();
 
         return redirect()->route('stok.index')
-            ->with('success', 'Stok menu berhasil ditambahkan');
+            ->with('success', 'Stok menu & bahan berhasil disinkronkan');
     }
 }

@@ -239,6 +239,13 @@
         </a>
     </div>
 
+    @if(auth()->user()->role == 'admin')
+        <a href="{{ route('resep.index') }}" 
+        class="btn btn-dark">
+            ⚙️ Kelola Resep
+        </a>
+    @endif
+
     <div class="col-6 col-md-4 col-lg-2">
         <a href="{{ url('/menu') }}" class="shortcut-item">
             <div class="lingkaran-ikon"><i class="fas fa-utensils"></i></div>

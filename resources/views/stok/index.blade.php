@@ -169,7 +169,7 @@
                                         @endif
                                     </td>
                                     <td class="text-end pe-4">
-                                        <a href="{{ route('menu.stok.edit', $m->id)) }}" class="btn btn-warning btn-sm btn-action-custom text-dark shadow-sm">
+                                        <a href="{{ route('menu.stok.edit', $m->id) }}" class="btn btn-warning btn-sm btn-action-custom text-dark shadow-sm">
                                             <i class="fas fa-plus-circle me-1"></i> Stok
                                         </a>
                                     </td>
