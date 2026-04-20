@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Menu;
-use Illuminate\Support\Facades\Auth as AuthFacade;
+use App\Models\Cabang;
+use Illuminate\Support\Facades\Auth;
 
 class MenuController extends Controller
 {
@@ -13,7 +14,7 @@ class MenuController extends Controller
     // =========================
     public function index()
     {
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         if ($user->role == 'admin') {
             $menu = Menu::all();
@@ -29,28 +30,40 @@ class MenuController extends Controller
     // =========================
     public function create()
     {
-        return view('menu.create');
+        $cabangs = Cabang::all(); // 🔥 untuk dropdown
+        return view('menu.create', compact('cabangs'));
     }
 
     // =========================
-    // STORE MENU
+    // STORE MENU (FIX TOTAL)
     // =========================
     public function store(Request $request)
     {
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         $request->validate([
             'nama_menu' => 'required|string|max:255',
             'harga' => 'required|integer|min:0',
-            'kategori' => 'nullable|string|max:255',
+            'kategori' => 'required|string',
+            'cabang_id' => 'nullable' // admin pakai ini
         ]);
+
+        // 🔥 LOGIC CERDAS
+        $cabangId = $user->role == 'admin'
+            ? $request->cabang_id
+            : $user->cabang_id;
+
+        // 🔥 VALIDASI TAMBAHAN
+        if (!$cabangId) {
+            return back()->with('error', 'Cabang wajib dipilih');
+        }
 
         Menu::create([
             'nama_menu' => $request->nama_menu,
             'harga' => $request->harga,
             'kategori' => $request->kategori,
             'stok' => 0,
-            'cabang_id' => $user->cabang_id
+            'cabang_id' => $cabangId
         ]);
 
         return redirect()->route('menu.index')
@@ -58,12 +71,12 @@ class MenuController extends Controller
     }
 
     // =========================
-    // FORM EDIT MENU
+    // EDIT MENU
     // =========================
     public function edit($id)
     {
         $menu = Menu::findOrFail($id);
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         if ($user->role != 'admin' &&
             $menu->cabang_id != $user->cabang_id) {
@@ -79,7 +92,7 @@ class MenuController extends Controller
     public function update(Request $request, $id)
     {
         $menu = Menu::findOrFail($id);
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         if ($user->role != 'admin' &&
             $menu->cabang_id != $user->cabang_id) {
@@ -89,7 +102,7 @@ class MenuController extends Controller
         $request->validate([
             'nama_menu' => 'required|string|max:255',
             'harga' => 'required|integer|min:0',
-            'kategori' => 'nullable|string|max:255',
+            'kategori' => 'required|string',
         ]);
 
         $menu->update([
@@ -108,7 +121,7 @@ class MenuController extends Controller
     public function destroy($id)
     {
         $menu = Menu::findOrFail($id);
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         if ($user->role != 'admin' &&
             $menu->cabang_id != $user->cabang_id) {
@@ -127,7 +140,7 @@ class MenuController extends Controller
     public function editStok($id)
     {
         $menu = Menu::findOrFail($id);
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         if ($user->role != 'admin' &&
             $menu->cabang_id != $user->cabang_id) {
@@ -138,12 +151,12 @@ class MenuController extends Controller
     }
 
     // =========================
-    // UPDATE STOK (TAMBAH)
+    // UPDATE STOK
     // =========================
     public function updateStok(Request $request, $id)
     {
         $menu = Menu::findOrFail($id);
-        $user = AuthFacade::user();
+        $user = Auth::user();
 
         if ($user->role != 'admin' &&
             $menu->cabang_id != $user->cabang_id) {
@@ -154,7 +167,6 @@ class MenuController extends Controller
             'stok' => 'required|integer|min:0'
         ]);
 
-        // 🔥 tambah stok (bukan replace)
         $menu->stok += $request->stok;
         $menu->save();
 

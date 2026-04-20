@@ -51,19 +51,21 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class,'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class,'destroy'])->name('profile.destroy');
 
-    // 🔥 KASIR (CABANG + ADMIN)
+    // Kasir
     Route::resource('kasir', KasirController::class);
 
-    // 🔥 STOK (CABANG + ADMIN)
+    // Stok
     Route::resource('stok', StokController::class);
 
-    // 🔥 STOK BAHAN
+    // 🔥 MENU (SEMUA USER BOLEH LIHAT & STOK)
+    Route::resource('menu', MenuController::class)->only(['index']);
+
+    // 🔥 STOK MENU
     Route::get('/stok/bahan/create', [KasirController::class, 'createBahan'])->name('stok.bahan.create');
     Route::post('/stok/bahan/store', [KasirController::class, 'storeBahan'])->name('stok.bahan.store');
     Route::get('/stok/bahan/{id}/edit', [KasirController::class, 'editBahan'])->name('stok.bahan.edit');
     Route::put('/stok/bahan/{id}', [KasirController::class, 'updateBahan'])->name('stok.bahan.update');
     Route::delete('/stok/bahan/{id}', [KasirController::class, 'destroyBahan'])->name('stok.bahan.destroy');
-
     Route::get('/menu/{id}/stok', [MenuController::class, 'editStok'])->name('menu.stok.edit');
     Route::put('/menu/{id}/stok', [MenuController::class, 'updateStok'])->name('menu.stok.update');
 
@@ -80,8 +82,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Cabang
     Route::resource('cabang', CabangController::class);
 
-    // Menu
-    Route::resource('menu', MenuController::class);
+    // Menu FULL (admin only)
+    Route::resource('menu', MenuController::class)->except(['index']);
 
     // User Cabang
     Route::get('/user/create', [UserController::class, 'create'])->name('user.create');

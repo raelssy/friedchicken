@@ -140,6 +140,18 @@
             <div class="card-body p-4">
                 <form action="{{ route('menu.store') }}" method="POST">
                     @csrf
+
+                    <div class="mb-3">
+                        <label>Cabang</label>
+                        <select name="cabang_id" class="form-control" required>
+                            <option value="">-- pilih cabang --</option>
+                            @foreach($cabangs as $cabang)
+                                <option value="{{ $cabang->id }}">
+                                    {{ $cabang->nama_cabang }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     
                     <div class="mb-3">
                         <label for="nama_menu" class="label-custom">Nama Produk</label>
