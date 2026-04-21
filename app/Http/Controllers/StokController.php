@@ -35,7 +35,8 @@ class StokController extends Controller
 
     public function createBahan()
     {
-        return view('bahan.create');
+        $cabangs = \App\Models\Cabang::all();
+        return view('bahan.create', compact('cabangs'));
     }
 
     public function store(Request $request)
@@ -57,6 +58,7 @@ class StokController extends Controller
             'nama_bahan' => 'required|string|max:255',
             'jumlah' => 'required|numeric|min:0',
             'satuan' => 'required|string',
+            'cabang_id' => 'required|exists:cabangs,id'
         ]);
 
         \App\Models\Bahan::create([

@@ -8,7 +8,6 @@
     <div class="card p-4">
         <form action="{{ route('menu.stok.update', $menu->id) }}" method="POST">
             @csrf
-            @method('PUT')
 
             <div class="mb-3">
                 <label>Nama Menu</label>
@@ -22,7 +21,11 @@
 
             <div class="mb-3">
                 <label>Tambah Stok</label>
-                <input type="number" name="stok" class="form-control" required>
+                <input type="number" name="stok" class="form-control" min="1" step="0.01" required>
+
+                @error('stok')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
             </div>
 
             <button class="btn btn-success">Tambah</button>

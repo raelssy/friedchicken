@@ -116,6 +116,18 @@
                     @csrf
 
                     <div class="mb-3">
+                        <label class="label-custom">Cabang</label>
+                        <select name="cabang_id" class="form-select form-control-custom shadow-sm" required>
+                            <option value="">-- Pilih Cabang --</option>
+                            @foreach($cabangs as $cabang)
+                                <option value="{{ $cabang->id }}">
+                                    {{ $cabang->nama_cabang }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
                         <label class="label-custom">Nama Bahan / Komoditas</label>
                         <div class="input-group">
                             <span class="input-group-text bg-white border-end-0 text-danger"><i class="fas fa-tag"></i></span>

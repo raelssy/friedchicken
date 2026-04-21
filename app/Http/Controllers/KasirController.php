@@ -118,7 +118,8 @@ class KasirController extends Controller
         $request->validate([
             'nama_bahan' => 'required|string|max:255',
             'jumlah'     => 'required|numeric|min:0',
-            'satuan'     => 'required|string'
+            'satuan'     => 'required|string',
+            'cabang_id'  => 'required|exists:cabangs,id'
         ]);
 
         Bahan::create($request->all());
@@ -130,8 +131,8 @@ class KasirController extends Controller
     
     public function createBahan()
     {
-        // Mengarahkan ke file resources/views/bahan/create.blade.php
-        return view('bahan.create');
+        $cabangs = \App\Models\Cabang::all(); // 🔥 WAJIB
+        return view('bahan.create', compact('cabangs'));
     }
    /**
  * Menampilkan Form Edit Bahan

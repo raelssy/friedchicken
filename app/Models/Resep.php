@@ -9,7 +9,8 @@ class Resep extends Model
     protected $fillable = [
         'menu_id',
         'bahan_id',
-        'jumlah'
+        'jumlah',
+        'is_main'
     ];
 
     public function bahan()

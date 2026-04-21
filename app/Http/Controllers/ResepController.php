@@ -9,6 +9,7 @@ use App\Models\Bahan;
 
 class ResepController extends Controller
 {
+    
     // =========================
     // LIST RESEP
     // =========================
@@ -43,36 +44,21 @@ class ResepController extends Controller
     // =========================
     public function store(Request $request)
     {
-        $request->validate([
-            'menu_id' => 'required'
-        ]);
+        $mainBahanId = $request->main_bahan;
 
-        $bahanIds = $request->bahan_id;
-        $jumlahs = $request->jumlah;
+        foreach ($request->bahan as $item) {
 
-        $valid = false;
+            if (empty($item['bahan_id'])) continue;
 
-        foreach ($bahanIds as $index => $bahanId) {
-
-            if ($bahanId && $jumlahs[$index]) {
-
-                $valid = true;
-
-                Resep::create([
-                    'menu_id' => $request->menu_id,
-                    'bahan_id' => $bahanId,
-                    'jumlah' => $jumlahs[$index]
-                ]);
-            }
+            Resep::create([
+                'menu_id' => $request->menu_id,
+                'bahan_id' => $item['bahan_id'],
+                'jumlah' => $item['jumlah'],
+                'is_main' => $item['bahan_id'] == $mainBahanId ? 1 : 0
+            ]);
         }
 
-        // ❌ kalau tidak ada bahan valid
-        if (!$valid) {
-            return back()->with('error', 'Minimal 1 bahan harus diisi');
-        }
-
-        return redirect()->route('resep.index')
-            ->with('success', 'Resep berhasil disimpan');
+        return redirect()->route('resep.index');
     }
 
     // =========================
@@ -84,4 +70,6 @@ class ResepController extends Controller
 
         return back()->with('success', 'Resep berhasil dihapus');
     }
+
+    
 }

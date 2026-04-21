@@ -12,7 +12,7 @@ body {
 }
 
 .form-wrapper {
-    max-width: 650px;
+    max-width: 700px;
     margin: auto;
 }
 
@@ -47,6 +47,14 @@ body {
     background: #4f46e5;
     color: white;
     font-weight: bold;
+}
+
+.radio-main {
+    font-size: 12px;
+}
+
+input[type="radio"]:checked {
+    transform: scale(1.2);
 }
 </style>
 
@@ -85,30 +93,34 @@ body {
 
             <div id="bahan-wrapper">
 
-                <div class="row mb-2 bahan-item">
-                    <div class="col-6">
-                        <select name="bahan_id[]" class="form-control">
-                            <option value="">Pilih bahan</option>
-                            @foreach($bahans as $b)
-                                <option value="{{ $b->id }}">{{ $b->nama_bahan }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+            <div class="row mb-2 bahan-item align-items-center">
 
-                    <div class="col-4">
-                        <input type="number" name="jumlah[]" class="form-control" placeholder="Jumlah">
-                    </div>
+                <div class="col-4">
+                    <select name="bahan[0][bahan_id]" class="form-control">
+                        <option value="">Pilih bahan</option>
+                        @foreach($bahans as $b)
+                            <option value="{{ $b->id }}">{{ $b->nama_bahan }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-                    <div class="col-2">
-                        <button type="button" class="btn btn-remove w-100" onclick="hapusBahan(this)">
-                            ✕
-                        </button>
-                    </div>
+                <div class="col-3">
+                    <input type="number" step="0.01" name="bahan[0][jumlah]" class="form-control">
+                </div>
+
+                <div class="col-3 text-center">
+                    <input type="radio" name="main_bahan" value="{{ $b->id }}"> Utama
+                </div>
+
+                <div class="col-2">
+                    <button type="button" class="btn btn-danger" onclick="hapusBahan(this)">X</button>
                 </div>
 
             </div>
 
-            <!-- BUTTON TAMBAH -->
+            </div>
+
+            <!-- TAMBAH -->
             <button type="button" onclick="tambahBahan()" class="btn btn-add mt-2">
                 + Tambah Bahan
             </button>
@@ -128,13 +140,18 @@ body {
 </div>
 
 <script>
+
+// tambah bahan
+let index = 1;
+
 function tambahBahan() {
     let wrapper = document.getElementById('bahan-wrapper');
 
     let html = `
-    <div class="row mb-2 bahan-item">
-        <div class="col-6">
-            <select name="bahan_id[]" class="form-control">
+    <div class="row mb-2 bahan-item align-items-center">
+
+        <div class="col-4">
+            <select name="bahan[${index}][bahan_id]" class="form-control">
                 <option value="">Pilih bahan</option>
                 @foreach($bahans as $b)
                     <option value="{{ $b->id }}">{{ $b->nama_bahan }}</option>
@@ -142,24 +159,62 @@ function tambahBahan() {
             </select>
         </div>
 
-        <div class="col-4">
-            <input type="number" name="jumlah[]" class="form-control" placeholder="Jumlah">
+        <div class="col-3">
+            <input type="number" step="0.01" name="bahan[${index}][jumlah]" class="form-control">
+        </div>
+
+        <div class="col-3 text-center">
+            <input type="radio" name="main_bahan" value="{{ $b->id }}"> Utama
         </div>
 
         <div class="col-2">
-            <button type="button" class="btn btn-remove w-100" onclick="hapusBahan(this)">
-                ✕
-            </button>
+            <button type="button" class="btn btn-danger" onclick="hapusBahan(this)">X</button>
         </div>
+
     </div>
     `;
 
     wrapper.insertAdjacentHTML('beforeend', html);
+    index++;
 }
 
+// hapus bahan
 function hapusBahan(btn) {
     btn.closest('.bahan-item').remove();
 }
+
+
+document.addEventListener('change', function(e) {
+
+    if (e.target.name.includes('[bahan_id]')) {
+
+        let row = e.target.closest('.bahan-item');
+        let radio = row.querySelector('input[type="radio"]');
+
+        radio.value = e.target.value; // 🔥 SYNC value
+    }
+
+});
+
+// 🔥 INI YANG KAMU TAMBAHKAN (PALING BAWAH)
+document.querySelector('form').addEventListener('submit', function () {
+
+    let rows = document.querySelectorAll('.bahan-item');
+
+    rows.forEach(row => {
+        let select = row.querySelector('select[name="bahan_id[]"]');
+        let radio = row.querySelector('input[type="radio"]');
+
+        if (radio.checked) {
+            radio.value = select.value; // 🔥 INI KUNCI FIX
+        }
+    });
+
+});
+
+
+
 </script>
+
 
 @endsection

@@ -8,12 +8,10 @@ use App\Models\Cabang;
 use App\Models\Resep;
 use App\Models\Bahan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MenuController extends Controller
 {
-    // =========================
-    // LIST MENU
-    // =========================
     public function index()
     {
         $user = Auth::user();
@@ -27,18 +25,12 @@ class MenuController extends Controller
         return view('menu.index', compact('menu'));
     }
 
-    // =========================
-    // FORM CREATE
-    // =========================
     public function create()
     {
-        $cabangs = Cabang::all(); // 🔥 untuk dropdown
+        $cabangs = Cabang::all();
         return view('menu.create', compact('cabangs'));
     }
 
-    // =========================
-    // STORE MENU (FIX TOTAL)
-    // =========================
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -47,15 +39,13 @@ class MenuController extends Controller
             'nama_menu' => 'required|string|max:255',
             'harga' => 'required|integer|min:0',
             'kategori' => 'required|string',
-            'cabang_id' => 'nullable' // admin pakai ini
+            'cabang_id' => 'nullable'
         ]);
 
-        // 🔥 LOGIC CERDAS
         $cabangId = $user->role == 'admin'
             ? $request->cabang_id
             : $user->cabang_id;
 
-        // 🔥 VALIDASI TAMBAHAN
         if (!$cabangId) {
             return back()->with('error', 'Cabang wajib dipilih');
         }
@@ -68,13 +58,9 @@ class MenuController extends Controller
             'cabang_id' => $cabangId
         ]);
 
-        return redirect()->route('menu.index')
-            ->with('success', 'Menu berhasil ditambahkan');
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan');
     }
 
-    // =========================
-    // EDIT MENU
-    // =========================
     public function edit($id)
     {
         $menu = Menu::findOrFail($id);
@@ -88,9 +74,6 @@ class MenuController extends Controller
         return view('menu.edit', compact('menu'));
     }
 
-    // =========================
-    // UPDATE MENU
-    // =========================
     public function update(Request $request, $id)
     {
         $menu = Menu::findOrFail($id);
@@ -113,13 +96,9 @@ class MenuController extends Controller
             'kategori' => $request->kategori
         ]);
 
-        return redirect()->route('menu.index')
-            ->with('success', 'Menu berhasil diupdate');
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil diupdate');
     }
 
-    // =========================
-    // DELETE MENU
-    // =========================
     public function destroy($id)
     {
         $menu = Menu::findOrFail($id);
@@ -132,13 +111,9 @@ class MenuController extends Controller
 
         $menu->delete();
 
-        return redirect()->route('menu.index')
-            ->with('success', 'Menu berhasil dihapus');
+        return redirect()->route('menu.index')->with('success', 'Menu berhasil dihapus');
     }
 
-    // =========================
-    // FORM TAMBAH STOK
-    // =========================
     public function editStok($id)
     {
         $menu = Menu::findOrFail($id);
@@ -153,54 +128,47 @@ class MenuController extends Controller
     }
 
     // =========================
-    // UPDATE STOK
+    // UPDATE STOK (FIX FINAL)
     // =========================
     public function updateStok(Request $request, $id)
     {
-        $menu = Menu::findOrFail($id);
-        $user = Auth::user();
+        $jumlahInput = (float) $request->stok;
 
-        if ($user->role != 'admin' &&
-            $menu->cabang_id != $user->cabang_id) {
-            abort(403);
+        $menu = Menu::findOrFail($id);
+
+        $reseps = Resep::where('menu_id', $id)->get();
+
+        $resepUtama = $reseps->where('is_main', 1)->first();
+
+        if (!$resepUtama) {
+            return back()->with('error', 'Bahan utama belum diset');
         }
 
-        $request->validate([
-            'stok' => 'required|integer|min:1'
-        ]);
-
-        $jumlahTambah = $request->stok;
-
-        // 🔥 ambil resep menu
-        $reseps = Resep::where('menu_id', $menu->id)->get();
+        // 🔥 WAJIB ADA
+        $utama = (float) $resepUtama->jumlah;
 
         foreach ($reseps as $resep) {
 
-            $bahan = Bahan::where('id', $resep->bahan_id)
-                        ->where('cabang_id', $menu->cabang_id)
-                        ->first();
+            $bahan = Bahan::find($resep->bahan_id);
 
-            if (!$bahan) {
-                return back()->with('error', 'Bahan tidak ditemukan');
+            if (!$bahan) continue;
+
+            // 🔥 RASIO
+            if ($resep->is_main) {
+                $kurang = $jumlahInput;
+            } else {
+                $kurang = ($resep->jumlah / $utama) * $jumlahInput;
             }
 
-            $total = $resep->jumlah * $jumlahTambah;
-
-            // ❌ kalau stok bahan kurang
-            if ($bahan->jumlah < $total) {
-                return back()->with('error', 'Stok bahan tidak cukup: ' . $bahan->nama_bahan);
-            }
-
-            // 🔥 kurangi bahan
-            $bahan->jumlah -= $total;
+            // 🔥 UPDATE
+            $bahan->jumlah = $bahan->jumlah - $kurang;
             $bahan->save();
         }
 
-        // 🔥 tambah stok menu
-        $menu->stok += $jumlahTambah;
+        // 🔥 UPDATE MENU
+        $menu->stok += $jumlahInput;
         $menu->save();
 
-        return redirect()->route('stok.index')
-            ->with('success', 'Stok menu & bahan berhasil disinkronkan');
+        return back()->with('success', 'Stok berhasil ditambahkan 🔥');
     }
 }

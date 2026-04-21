@@ -11,10 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('bahans', function (Blueprint $table) {
-            $table->foreignId('cabang_id')
-                ->constrained('cabangs')
-                ->cascadeOnDelete();
+        Schema::table('reseps', function (Blueprint $table) {
+            $table->boolean('is_main')->default(false);
         });
     }
 
@@ -23,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('bahans', function (Blueprint $table) {
+        Schema::table('reseps', function (Blueprint $table) {
             //
         });
     }
