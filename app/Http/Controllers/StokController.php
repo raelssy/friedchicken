@@ -7,6 +7,7 @@ use App\Models\Stok;
 use App\Models\Cabang;
 use App\Models\Menu;
 use App\Models\Bahan;
+use App\Models\Resep;
 use Illuminate\Support\Facades\Auth;
 
 class StokController extends Controller
@@ -19,12 +20,14 @@ class StokController extends Controller
         if ($user->role == 'admin') {
             $menu = Menu::all();
             $bahan = Bahan::all();
+            $reseps = Resep::all();
         } else {
             $menu = Menu::where('cabang_id', $user->cabang_id)->get();
             $bahan = Bahan::where('id', $user->cabang_id)->get();
+            $reseps = Resep::where('cabang_id', $user->cabang_id)->get();
         }
 
-        return view('stok.index', compact('menu', 'bahan'));
+        return view('stok.index', compact('menu', 'bahan', 'reseps'));
     }
 
     public function create()

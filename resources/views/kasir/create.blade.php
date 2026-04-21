@@ -173,7 +173,7 @@
                         </div>
 
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-5">
-                            <a href="{{ route('kasir.index') }}" class="text-decoration-none text-muted fw-bold order-2 order-md-1">
+                            <a href="{{ url('/dashboard') }}" class="text-decoration-none text-muted fw-bold order-2 order-md-1">
                                 <i class="fas fa-times me-1 text-danger"></i> Batalkan Pesanan
                             </a>
                             <button type="submit" id="btn-submit" class="btn btn-kfc-red px-5 shadow order-1 order-md-2 w-100 w-md-auto">

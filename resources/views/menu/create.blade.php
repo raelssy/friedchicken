@@ -127,9 +127,7 @@
 <div class="container py-4 py-md-5">
     <div class="form-wrapper">
         
-        <a href="{{ route('menu.index') }}" class="btn-kembali text-decoration-none mb-3 d-inline-block">
-            <i class="fas fa-arrow-left me-1"></i> Kembali ke Daftar
-        </a>
+
 
         <div class="card border-0 shadow-lg rounded-3">
             <div class="card-header card-header-custom border-0">

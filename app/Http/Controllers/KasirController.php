@@ -6,63 +6,80 @@ use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\Cabang;
 use App\Models\Menu;
-use App\Models\Bahan; // Pastikan model Bahan sudah ada
+use App\Models\Bahan;
+use Illuminate\Support\Facades\DB;
 
 class KasirController extends Controller
 {
-    /**
-     * Tampilan Utama POS / Kasir
-     */
+    // =========================
+    // LIST TRANSAKSI
+    // =========================
     public function index()
     {
         $transaksi = Transaksi::with('menu')->latest()->get();
         return view('kasir.index', compact('transaksi'));
     }
 
-    /**
-     * Form Transaksi Baru
-     */
+    // =========================
+    // FORM TRANSAKSI
+    // =========================
     public function create()
     {
-        $menu = Menu::where('stok', '>', 0)->get(); 
+        $menu = Menu::where('stok', '>', 0)->get();
         $cabang = Cabang::all();
+
         return view('kasir.create', compact('menu', 'cabang'));
     }
 
-    /**
-     * Simpan Transaksi & Potong Stok Menu
-     */
+    // =========================
+    // SIMPAN TRANSAKSI
+    // =========================
     public function store(Request $request)
     {
         $request->validate([
-            'cabang_id' => 'required|exists:cabang,id',
-            'menu_id'   => 'required|exists:menu,id',
+            'cabang_id' => 'required|exists:cabangs,id', 
+            'menu_id'   => 'required|exists:menu,id',   
             'qty'       => 'required|numeric|min:1',
             'total'     => 'required|numeric',
         ]);
 
-        $menu = Menu::findOrFail($request->menu_id);
+        DB::beginTransaction();
 
-        if ($menu->stok < $request->qty) {
-            return back()->with('error', 'Stok tidak mencukupi! Sisa: ' . $menu->stok);
+        try {
+            $menu = Menu::findOrFail($request->menu_id);
+
+            // 🔥 CEK STOK
+            if ($menu->stok < $request->qty) {
+                return back()->with('error', 'Stok tidak mencukupi! Sisa: ' . $menu->stok);
+            }
+
+            // 🔥 SIMPAN TRANSAKSI
+            Transaksi::create([
+                'menu_id'   => $request->menu_id,
+                'cabang_id' => $request->cabang_id,
+                'qty'       => $request->qty,
+                'total'     => $request->total,
+                'tanggal'   => now()->toDateString(),
+            ]);
+
+            // 🔥 KURANGI STOK MENU
+            $menu->decrement('stok', $request->qty);
+
+            DB::commit();
+
+            return redirect()->route('kasir.index')
+                ->with('success', 'Transaksi berhasil 🔥');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
-
-        Transaksi::create([
-            'menu_id'   => $request->menu_id,
-            'cabang_id' => $request->cabang_id, 
-            'qty'       => $request->qty,
-            'total'     => $request->total,
-            'tanggal'   => now()->toDateString(),
-        ]);
-
-        $menu->decrement('stok', $request->qty);
-
-        return redirect()->route('kasir.index')->with('success', 'Transaksi Berhasil!');
     }
 
-    /**
-     * Form Edit Transaksi
-     */
+    // =========================
+    // EDIT TRANSAKSI
+    // =========================
     public function edit($id)
     {
         $transaksi = Transaksi::findOrFail($id);
@@ -72,47 +89,67 @@ class KasirController extends Controller
         return view('kasir.edit', compact('transaksi', 'menu', 'cabang'));
     }
 
-    /**
-     * Update Transaksi & Penyesuaian Balik Stok
-     */
+    // =========================
+    // UPDATE TRANSAKSI
+    // =========================
     public function update(Request $request, $id)
     {
-        $transaksi = Transaksi::findOrFail($id);
-        $menuLama = Menu::find($transaksi->menu_id);
-        $menuBaru = Menu::find($request->menu_id);
-
         $request->validate([
-            'menu_id' => 'required|exists:menu,id',
+            'menu_id' => 'required|exists:menus,id',
             'qty'     => 'required|numeric|min:1',
             'total'   => 'required|numeric'
         ]);
 
-        // 1. Kembalikan stok lama
-        $menuLama->increment('stok', $transaksi->qty);
+        DB::beginTransaction();
 
-        // 2. Cek apakah stok menu baru cukup (setelah dikembalikan)
-        if ($menuBaru->stok < $request->qty) {
-            // Rollback stok lama jika gagal
-            $menuLama->decrement('stok', $transaksi->qty);
-            return back()->with('error', 'Stok menu baru tidak mencukupi!');
+        try {
+            $transaksi = Transaksi::findOrFail($id);
+
+            $menuLama = Menu::findOrFail($transaksi->menu_id);
+            $menuBaru = Menu::findOrFail($request->menu_id);
+
+            // 🔥 KEMBALIKAN STOK LAMA
+            $menuLama->increment('stok', $transaksi->qty);
+
+            // 🔥 CEK STOK BARU
+            if ($menuBaru->stok < $request->qty) {
+                // rollback manual
+                $menuLama->decrement('stok', $transaksi->qty);
+
+                return back()->with('error', 'Stok menu tidak mencukupi!');
+            }
+
+            // 🔥 KURANGI STOK BARU
+            $menuBaru->decrement('stok', $request->qty);
+
+            // 🔥 UPDATE TRANSAKSI
+            $transaksi->update([
+                'menu_id' => $request->menu_id,
+                'qty'     => $request->qty,
+                'total'   => $request->total
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('kasir.index')
+                ->with('success', 'Transaksi berhasil diupdate 🔥');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            return back()->with('error', 'Error: ' . $e->getMessage());
         }
-
-        // 3. Potong stok menu baru & Update Transaksi
-        $menuBaru->decrement('stok', $request->qty);
-        $transaksi->update([
-            'menu_id' => $request->menu_id,
-            'qty'     => $request->qty,
-            'total'   => $request->total
-        ]);
-
-        return redirect()->route('kasir.index')->with('success', 'Transaksi berhasil diperbarui!');
     }
 
-    // --- FUNGSI UNTUK MANAJEMEN BAHAN MENTAH ---
+    // =========================
+    // TAMBAH BAHAN
+    // =========================
+    public function createBahan()
+    {
+        $cabangs = Cabang::all();
+        return view('bahan.create', compact('cabangs'));
+    }
 
-    /**
-     * Simpan Bahan Mentah Baru
-     */
     public function storeBahan(Request $request)
     {
         $request->validate([
@@ -124,60 +161,46 @@ class KasirController extends Controller
 
         Bahan::create($request->all());
 
-        return redirect()->back()->with('success', 'Bahan mentah berhasil ditambahkan!');
+        return back()->with('success', 'Bahan berhasil ditambahkan!');
     }
 
-
-    
-    public function createBahan()
+    // =========================
+    // EDIT BAHAN
+    // =========================
+    public function editBahan($id)
     {
-        $cabangs = \App\Models\Cabang::all(); // 🔥 WAJIB
-        return view('bahan.create', compact('cabangs'));
+        $bahan = Bahan::findOrFail($id);
+        return view('bahan.edit', compact('bahan'));
     }
-   /**
- * Menampilkan Form Edit Bahan
- */
-public function editBahan($id)
-{
-    // Mengambil data bahan berdasarkan ID
-    $bahan = \App\Models\Bahan::findOrFail($id);
-    
-    // Mengarahkan ke file resources/views/bahan/edit.blade.php
-    return view('bahan.edit', compact('bahan'));
-}
 
-/**
- * Memproses Update Data Bahan ke Database
- */
-public function updateBahan(Request $request, $id)
-{
-    // 1. Validasi Input
-    $request->validate([
-        'nama_bahan' => 'required|string|max:255',
-        'jumlah'     => 'required|numeric|min:0',
-        'satuan'     => 'required|string'
-    ]);
+    public function updateBahan(Request $request, $id)
+    {
+        $request->validate([
+            'nama_bahan' => 'required|string|max:255',
+            'jumlah'     => 'required|numeric|min:0',
+            'satuan'     => 'required|string'
+        ]);
 
-    // 2. Cari data dan Update
-    $bahan = \App\Models\Bahan::findOrFail($id);
-    $bahan->update([
-        'nama_bahan' => $request->nama_bahan,
-        'jumlah'     => $request->jumlah,
-        'satuan'     => $request->satuan,
-    ]);
+        $bahan = Bahan::findOrFail($id);
 
-    // 3. Redirect kembali ke halaman stok dengan pesan sukses
-    return redirect()->route('stok.index')->with('success', 'Data bahan berhasil diperbarui!');
-}
+        $bahan->update([
+            'nama_bahan' => $request->nama_bahan,
+            'jumlah'     => $request->jumlah,
+            'satuan'     => $request->satuan,
+        ]);
 
-    /**
-     * Hapus Bahan Mentah
-     */
+        return redirect()->route('stok.index')
+            ->with('success', 'Bahan berhasil diupdate!');
+    }
+
+    // =========================
+    // HAPUS BAHAN
+    // =========================
     public function destroyBahan($id)
     {
         $bahan = Bahan::findOrFail($id);
         $bahan->delete();
 
-        return redirect()->back()->with('success', 'Bahan berhasil dihapus!');
+        return back()->with('success', 'Bahan berhasil dihapus!');
     }
 }

@@ -9,9 +9,12 @@
         font-family: 'Montserrat', sans-serif;
     }
 
-    .card-form {
+    .form-wrapper {
         max-width: 500px;
         margin: 40px auto;
+    }
+
+    .card-form {
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -54,49 +57,72 @@
     .btn-save:hover {
         background: #b30022;
     }
+
+    /* 🔥 BACK BUTTON STYLE */
+    .btn-back {
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-back:hover {
+        background: #e4002b;
+        color: white;
+        border-color: #e4002b;
+    }
 </style>
 
-<div class="card-form">
-    <div class="card-header">
-        Tambah User Cabang
+<div class="form-wrapper">
+
+    <!-- 🔥 BACK BUTTON -->
+    <div class="mb-3">
+        <a href="{{ url('/dashboard') }}" class="btn btn-outline-secondary btn-back">
+            <i class="fas fa-arrow-left me-1"></i> 
+        </a>
     </div>
 
-    <div class="card-body">
+    <div class="card-form">
+        <div class="card-header">
+            Tambah User Cabang
+        </div>
 
-        <form method="POST" action="{{ route('user.store') }}">
-            @csrf
+        <div class="card-body">
 
-            <div class="form-group">
-                <label>Nama User</label>
-                <input type="text" name="name" required>
-            </div>
+            <form method="POST" action="{{ route('user.store') }}">
+                @csrf
 
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" name="email" required>
-            </div>
+                <div class="form-group">
+                    <label>Nama User</label>
+                    <input type="text" name="name" required>
+                </div>
 
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" name="password" required>
-            </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" required>
+                </div>
 
-            <div class="form-group">
-                <label>Pilih Cabang</label>
-                <select name="cabang_id" required>
-                    <option value="">-- Pilih Cabang --</option>
-                    @foreach($cabangs as $c)
-                        <option value="{{ $c->id }}">{{ $c->nama_cabang }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" required>
+                </div>
 
-            <button type="submit" class="btn-save">
-                Simpan User Cabang
-            </button>
+                <div class="form-group">
+                    <label>Pilih Cabang</label>
+                    <select name="cabang_id" required>
+                        <option value="">-- Pilih Cabang --</option>
+                        @foreach($cabangs as $c)
+                            <option value="{{ $c->id }}">{{ $c->nama_cabang }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-        </form>
+                <button type="submit" class="btn-save">
+                    Simpan User Cabang
+                </button>
 
+            </form>
+
+        </div>
     </div>
+
 </div>
 @endsection

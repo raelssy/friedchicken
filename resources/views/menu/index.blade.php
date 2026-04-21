@@ -109,14 +109,26 @@
     }
 </style>
 
-<div class="container mt-4 mt-md-5">
+<div class="header-wrapper mb-4">
 
-    <div class="header-wrapper mb-4">
-        <h3 class="judul-halaman">Daftar Menu FnB</h3>
-        <a href="{{ route('menu.create') }}" class="btn btn-tambah shadow-sm rounded-pill">
-            <i class="fa fa-plus-circle me-1"></i> Tambah Menu
+    <div class="d-flex align-items-center gap-3">
+
+        <!-- BACK BUTTON -->
+        <a href="{{ url('/dashboard') }}" class="btn btn-outline-secondary btn-sm fw-bold">
+            <i class="fas fa-arrow-left"></i>
         </a>
+
+        <!-- TITLE -->
+        <h3 class="judul-halaman mb-0">Daftar Menu FnB</h3>
+
     </div>
+
+    <!-- BUTTON TAMBAH -->
+    <a href="{{ route('menu.create') }}" class="btn btn-tambah shadow-sm rounded-pill">
+        <i class="fa fa-plus-circle me-1"></i> Tambah Menu
+    </a>
+
+</div>
 
     <div class="card card-tabel shadow-lg">
         <div class="card-body p-0">

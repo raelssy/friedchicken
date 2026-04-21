@@ -94,15 +94,28 @@
 </style>
 
 <div class="container mt-4 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4 header-cabang">
+  <div class="d-flex justify-content-between align-items-center mb-4 header-cabang">
+
+    <div class="d-flex align-items-center gap-3">
+
+        <!-- BACK -->
+        <a href="{{ url('/dashboard') }}" class="btn btn-outline-secondary btn-sm fw-bold">
+            <i class="fas fa-arrow-left me-1"></i>
+        </a>
+
         <div>
             <h3 class="judul-cabang mb-0">Data Cabang</h3>
             <p class="text-muted small mb-0">Kelola lokasi outlet FnB Anda</p>
         </div>
-        <a href="/cabang/create" class="btn btn-tambah-cabang px-4 py-2 shadow-sm rounded-pill">
-            <i class="fas fa-plus-circle me-1"></i> Tambah Cabang
-        </a>
+
     </div>
+
+    <!-- TOMBOL TAMBAH -->
+    <a href="/cabang/create" class="btn btn-tambah-cabang px-4 py-2 shadow-sm rounded-pill">
+        <i class="fas fa-plus-circle me-1"></i> Tambah Cabang
+    </a>
+
+</div>
 
     <div class="card card-tabel-cabang shadow-lg">
         <div class="card-body p-0">
