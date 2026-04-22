@@ -184,6 +184,8 @@
         <span class="label-shortcut">Kelola Menu</span>
     </a>
 
+    @if(auth()->user()->role == 'admin')
+
     <a href="{{ url('/cabang') }}" class="shortcut-item flex-item">
         <div class="lingkaran-ikon"><i class="fas fa-store"></i></div>
         <span class="label-shortcut">Data Cabang</span>
@@ -193,6 +195,8 @@
         <div class="lingkaran-ikon"><i class="fas fa-user-plus"></i></div>
         <span class="label-shortcut">User Cabang</span>
     </a>
+
+    @endif
 
 
 </div>

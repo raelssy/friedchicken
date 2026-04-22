@@ -124,9 +124,11 @@
     </div>
 
     <!-- BUTTON TAMBAH -->
+    @if(auth()->user()->role == 'admin')
     <a href="{{ route('menu.create') }}" class="btn btn-tambah shadow-sm rounded-pill">
         <i class="fa fa-plus-circle me-1"></i> Tambah Menu
     </a>
+    @endif
 
 </div>
 
@@ -141,7 +143,9 @@
                             <th>Kategori</th>
                             <th>Harga</th>
                             <th class="text-center">Stok</th>
+                            @if(auth()->user()->role == 'admin')
                             <th width="150px" class="text-center pe-4">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
 
@@ -173,9 +177,12 @@
                                     </span>
                                 @endif
                             </td>
-
+                            
+                            @if(auth()->user()->role == 'admin')
                             <td class="text-center pe-4">
+                                
                                 <div class="btn-group" role="group">
+
                                     <a href="{{ route('menu.edit', $m->id) }}" class="btn btn-edit btn-sm px-3">
                                         <i class="fa fa-edit"></i>
                                     </a>
@@ -185,9 +192,13 @@
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-hapus btn-sm px-3">
                                             <i class="fa fa-trash"></i>
-                                        </button>
+                                        </button>   
                                     </form>
+
                                 </div>
+                                @else
+                                    <span class="text-muted small">-</span>
+                                @endif
                             </td>
                         </tr>
                         @empty

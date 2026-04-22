@@ -144,31 +144,67 @@ class MenuController extends Controller
             return back()->with('error', 'Bahan utama belum diset');
         }
 
-        // 🔥 WAJIB ADA
         $utama = (float) $resepUtama->jumlah;
 
+        // =========================
+        // 🔥 STEP 1: CEK DULU SEMUA BAHAN
+        // =========================
         foreach ($reseps as $resep) {
 
             $bahan = Bahan::find($resep->bahan_id);
 
             if (!$bahan) continue;
 
-            // 🔥 RASIO
             if ($resep->is_main) {
                 $kurang = $jumlahInput;
             } else {
                 $kurang = ($resep->jumlah / $utama) * $jumlahInput;
             }
 
-            // 🔥 UPDATE
-            $bahan->jumlah = $bahan->jumlah - $kurang;
-            $bahan->save();
+            // ❌ JIKA TIDAK CUKUP
+            if ($bahan->jumlah < $kurang) {
+                return back()->with('error', 
+                    'Stok bahan "' . $bahan->nama_bahan . '" tidak cukup!'
+                );
+            }
         }
 
-        // 🔥 UPDATE MENU
-        $menu->stok += $jumlahInput;
-        $menu->save();
+        // =========================
+        // 🔥 STEP 2: BARU KURANGI
+        // =========================
+        DB::beginTransaction();
 
-        return back()->with('success', 'Stok berhasil ditambahkan 🔥');
+        try {
+
+            foreach ($reseps as $resep) {
+
+                $bahan = Bahan::find($resep->bahan_id);
+
+                if (!$bahan) continue;
+
+                if ($resep->is_main) {
+                    $kurang = $jumlahInput;
+                } else {
+                    $kurang = ($resep->jumlah / $utama) * $jumlahInput;
+                }
+
+                $bahan->jumlah -= $kurang;
+                $bahan->save();
+            }
+
+            // 🔥 tambah stok menu
+            $menu->stok += $jumlahInput;
+            $menu->save();
+
+            DB::commit();
+
+            return back()->with('success', 'Stok berhasil ditambahkan 🔥');
+
+        } catch (\Exception $e) {
+
+            DB::rollback();
+
+            return back()->with('error', 'Terjadi kesalahan!');
+        }
     }
 }
