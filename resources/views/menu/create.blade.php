@@ -8,16 +8,14 @@
     body {
         background-color: #f8f9fa;
         font-family: 'Montserrat', sans-serif;
-        font-size: 14px; /* Ukuran dasar yang nyaman di semua perangkat */
+        font-size: 14px;
     }
 
-    /* Membatasi lebar form agar tidak melar di laptop */
     .form-wrapper {
         max-width: 550px;
         margin: 0 auto;
     }
 
-    /* Link Kembali */
     .btn-kembali {
         color: #6c757d;
         font-weight: 600;
@@ -28,7 +26,6 @@
         color: #e4002b;
     }
 
-    /* Header Card Custom */
     .card-header-custom {
         background: linear-gradient(135deg, #e4002b 0%, #b30022 100%);
         color: white;
@@ -44,7 +41,6 @@
         margin: 0;
     }
 
-    /* Input Styling */
     .label-custom {
         font-weight: 700;
         font-size: 12px;
@@ -73,7 +69,6 @@
         font-size: 13px;
     }
 
-    /* Tombol Simpan */
     .btn-simpan {
         background-color: #e4002b;
         border: none;
@@ -100,7 +95,6 @@
         text-decoration: none;
     }
 
-    /* Penyesuaian layar HP */
     @media (max-width: 576px) {
         .container {
             padding-left: 15px;
@@ -110,11 +104,11 @@
             padding: 20px !important;
         }
         .btn-simpan {
-            width: 100%; /* Tombol jadi penuh di HP */
+            width: 100%;
             margin-top: 10px;
         }
         .d-flex-mobile {
-            flex-direction: column-reverse; /* Batal di bawah, Simpan di atas */
+            flex-direction: column-reverse;
             gap: 10px;
         }
         .btn-batal {
@@ -126,8 +120,6 @@
 
 <div class="container py-4 py-md-5">
     <div class="form-wrapper">
-        
-
 
         <div class="card border-0 shadow-lg rounded-3">
             <div class="card-header card-header-custom border-0">
@@ -136,7 +128,8 @@
             </div>
             
             <div class="card-body p-4">
-                <form action="{{ route('menu.store') }}" method="POST">
+                <!-- 🔥 TAMBAH enctype -->
+                <form action="{{ route('menu.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="mb-3">
@@ -185,6 +178,20 @@
                                 <option value="Snack">Snack</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- 🔥 TAMBAHAN INPUT GAMBAR -->
+                    <div class="mb-3">
+                        <label for="gambar" class="label-custom">Gambar Produk</label>
+                        <input type="file" 
+                               name="gambar" 
+                               id="gambar" 
+                               class="form-control form-control-custom @error('gambar') is-invalid @enderror"
+                               accept="image/*">
+
+                        @error('gambar')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <hr class="text-muted opacity-25 my-4">

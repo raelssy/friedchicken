@@ -13,6 +13,19 @@ class Menu extends Model
         'harga',
         'kategori',
         'stok',
-        'cabang_id'
+        'cabang_id',
+        'gambar' 
     ];
+
+    public function cabang()
+    {
+        return $this->belongsTo(Cabang::class);
+    }
+
+    public function cart()
+    {
+        return $this->hasMany(Cart::class, 'menu_id');
+    }
+
+    
 }

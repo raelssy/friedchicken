@@ -109,6 +109,25 @@
 
     <div class="tab-content">
 
+        @if(auth()->user()->role == 'admin')
+
+        <form method="GET" class="mb-3 d-flex gap-2">
+
+            <select name="cabang_id" class="form-select w-auto" onchange="this.form.submit()">
+                <option value="">Semua Cabang</option>
+
+                @foreach($cabangs as $c)
+                    <option value="{{ $c->id }}"
+                        {{ request('cabang_id') == $c->id ? 'selected' : '' }}>
+                        {{ $c->nama_cabang }}
+                    </option>
+                @endforeach
+            </select>
+
+        </form>
+
+        @endif
+
         <!-- ================= STOK MENU ================= -->
         <div class="tab-pane fade show active" id="pills-menu">
 
@@ -134,7 +153,10 @@
                 <div class="card-body p-0">
                     <table class="table table-hover mb-0">
                         <thead class="thead-custom">
-                            <tr>
+                        <tr>
+                            @if(auth()->user()->role == 'admin')
+                            <th>Cabang</th>
+                            @endif
                                 <th class="ps-4">Nama Menu</th>
                                 <th>Kategori</th>
                                 <th class="text-center">Sisa Stok</th>
@@ -143,8 +165,12 @@
                         </thead>
 
                         <tbody>
-                            @foreach($menu as $m)
+                            
+                            @foreach($menus as $m)
                             <tr>
+                                @if(auth()->user()->role == 'admin')
+                                <td>{{ $m->cabang->nama_cabang ?? '-' }}</td>
+                                @endif
                                 <td class="ps-4 fw-bold">{{ $m->nama_menu }}</td>
 
                                 <td>

@@ -11,7 +11,6 @@
         font-family: 'Montserrat', sans-serif;
     }
 
-    /* HEADER */
     .header {
         display: flex;
         justify-content: space-between;
@@ -29,7 +28,6 @@
         color: #888;
     }
 
-    /* SUMMARY */
     .summary-card {
         background: white;
         border-radius: 12px;
@@ -48,7 +46,6 @@
         font-weight: 800;
     }
 
-    /* TABLE */
     .table-container {
         background: white;
         border-radius: 15px;
@@ -66,15 +63,10 @@
         color: #999;
     }
 
-    .table tbody tr {
-        transition: 0.2s;
-    }
-
     .table tbody tr:hover {
         background: #fff5f6;
     }
 
-    /* TEXT */
     .menu-name {
         font-weight: 700;
         font-size: 14px;
@@ -85,7 +77,6 @@
         color: #aaa;
     }
 
-    /* BADGE */
     .badge-qty {
         background: #fff3cd;
         color: #856404;
@@ -94,13 +85,11 @@
         padding: 5px 10px;
     }
 
-    /* TOTAL */
     .total {
         font-weight: 800;
         color: #e4002b;
     }
 
-    /* BUTTON */
     .btn-kfc {
         background: #e4002b;
         color: white;
@@ -166,6 +155,7 @@
                     <th>Produk</th>
                     <th class="text-center">Qty</th>
                     <th class="text-end">Total</th>
+                    <th class="text-center">Pembayaran</th> <!-- 🔥 TAMBAHAN -->
                     <th class="text-center">Aksi</th>
                 </tr>
             </thead>
@@ -202,6 +192,17 @@
                         Rp {{ number_format($t->total, 0, ',', '.') }}
                     </td>
 
+                    <!-- 🔥 METODE PEMBAYARAN -->
+                    <td class="text-center">
+                        @if($t->metode_pembayaran == 'cash')
+                            <span class="badge bg-success">💵 Cash</span>
+                        @elseif($t->metode_pembayaran == 'qris')
+                            <span class="badge bg-primary">📱 QRIS</span>
+                        @else
+                            <span class="badge bg-secondary">-</span>
+                        @endif
+                    </td>
+
                     <td class="text-center">
                         <a href="/kasir/edit/{{ $t->id }}" class="btn btn-sm btn-outline-warning">
                             <i class="fas fa-edit"></i>
@@ -212,7 +213,7 @@
 
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center py-5 text-muted">
+                    <td colspan="7" class="text-center py-5 text-muted">
                         <i class="fas fa-receipt fa-3x mb-3 opacity-25"></i>
                         <p class="mb-0">Belum ada transaksi hari ini</p>
                     </td>

@@ -5,230 +5,192 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-    body {
-        background-color: #f4f7f6;
-        font-family: 'Montserrat', sans-serif;
-    }
+body {
+    background-color: #f4f7f6;
+    font-family: 'Montserrat', sans-serif;
+}
 
-    /* Header & Card Styling */
-    .card-kasir {
-        border-radius: 20px;
-        border: none;
-        overflow: hidden;
-    }
+/* CARD */
+.card-kasir {
+    border-radius: 20px;
+    border: none;
+}
 
-    .card-header-kfc {
-        background: linear-gradient(135deg, #e4002b 0%, #b30022 100%);
-        color: white;
-        padding: 25px;
-        border-bottom: 5px solid #ffc107; /* Aksen Kuning */
-    }
+/* HEADER */
+.card-header-kfc {
+    background: linear-gradient(135deg, #e4002b, #b30022);
+    color: white;
+    padding: 20px;
+    border-bottom: 5px solid #ffc107;
+}
 
-    .card-header-kfc h4 {
-        font-weight: 800;
-        letter-spacing: 1px;
-    }
+/* FORM */
+.input-kfc {
+    border-radius: 10px;
+    border: 2px solid #eee;
+    padding: 10px;
+}
 
-    /* Form Elements */
-    .form-label-custom {
-        font-weight: 700;
-        font-size: 11px;
-        text-transform: uppercase;
-        color: #666;
-        letter-spacing: 0.5px;
-        margin-bottom: 8px;
-        display: block;
-    }
+/* MENU GRID */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+    gap: 12px;
+}
 
-    .input-kfc {
-        border-radius: 12px !important;
-        border: 2px solid #eee !important;
-        padding: 12px 15px !important;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
+.menu-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
 
-    .input-kfc:focus {
-        border-color: #ffc107 !important;
-        box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.15) !important;
-        background-color: #fff;
-    }
+.menu-card img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 10px;
+}
 
-    /* Total Section */
-    .total-box {
-        background-color: #fff3cd;
-        border: 2px dashed #ffc107;
-        border-radius: 12px;
-        padding: 15px;
-    }
-
-    .display-total {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #e4002b;
-        margin: 0;
-    }
-
-    /* Button Styling */
-    .btn-kfc-red {
-        background-color: #e4002b;
-        border: none;
-        color: white;
-        font-weight: 800;
-        text-transform: uppercase;
-        padding: 15px 35px;
-        border-radius: 12px;
-        transition: 0.3s;
-    }
-
-    .btn-kfc-red:hover {
-        background-color: #b30022;
-        color: white;
-        transform: translateY(-3px);
-        box-shadow: 0 8px 15px rgba(228, 0, 43, 0.2);
-    }
-
-    .btn-kfc-red:disabled {
-        background-color: #ccc;
-        transform: none;
-    }
-
-    /* Animation */
-    @keyframes pulse-yellow {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.02); }
-        100% { transform: scale(1); }
-    }
-    .stok-aman { color: #198754; font-size: 12px; }
-    .stok-bahaya { color: #dc3545; font-size: 12px; animation: pulse-yellow 1s infinite; }
+/* CART */
+.cart-box {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+}
 </style>
 
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-7 col-md-10">
+<div class="container py-4">
 
-            @if(session('error'))
-                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4 mb-4" role="alert">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-times-circle me-3 fs-4"></i>
-                        <div><strong>Gagal!</strong> {{ session('error') }}</div>
+    @if(session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
+    <div class="card card-kasir shadow-lg">
+        <div class="card-header card-header-kfc text-center">
+            <h4>POS - KASIR</h4>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <!-- 🔥 MENU -->
+                <div class="col-md-7">
+                    <h5>🍗 Menu</h5>
+
+                    <div class="menu-grid">
+                        @foreach($menu as $m)
+                        <div class="menu-card">
+
+                            <img src="{{ $m->gambar ? asset('storage/'.$m->gambar) : 'https://via.placeholder.com/150' }}">
+
+                            <b>{{ $m->nama_menu }}</b>
+                            <small>Rp {{ number_format($m->harga) }}</small>
+
+                            <a href="{{ route('cart.add', $m->id) }}" class="btn btn-primary btn-sm mt-2 w-100">
+                                + Tambah
+                            </a>
+
+                        </div>
+                        @endforeach
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
-            <div class="card card-kasir shadow-lg">
-                <div class="card-header card-header-kfc text-center">
-                    <h4 class="mb-0"><i class="fas fa-cash-register me-2 text-warning"></i> POS - KASIR</h4>
-                    <p class="small mb-0 opacity-75 fw-semibold mt-1">Sistem Input Penjualan Real-Time</p>
                 </div>
 
-                <div class="card-body p-4 p-md-5">
-                    <form action="{{ route('kasir.store') }}" method="POST">
+                <!-- 🔥 CART + FORM -->
+                <div class="col-md-5">
+
+                    <!-- CART -->
+                    <div class="cart-box mb-3">
+                        <h5>🛒 Keranjang</h5>
+
+                        @php $total = 0; @endphp
+
+                        @forelse($cart ?? [] as $item)
+                            @php 
+                                $subtotal = $item->menu->harga * $item->qty;
+                                $total += $subtotal;
+                            @endphp
+
+                            <div class="border-bottom mb-2 pb-2">
+                                <b>{{ $item->menu->nama_menu }}</b><br>
+                                Qty: {{ $item->qty }} <br>
+                                Rp {{ number_format($subtotal) }}
+
+                                <a href="{{ route('cart.remove', $item->id) }}" class="btn btn-danger btn-sm mt-1">
+                                    Hapus
+                                </a>
+                            </div>
+                        @empty
+                            <p class="text-muted">Keranjang kosong</p>
+                        @endforelse
+
+                        <hr>
+
+                        <h5>Total: Rp {{ number_format($total) }}</h5>
+
+                         <form action="{{ route('checkout') }}" method="POST">
                         @csrf
 
-                        <div class="mb-4">
-                            <label class="form-label-custom">Lokasi Transaksi</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-2 border-end-0 rounded-start-3"><i class="fas fa-store text-danger"></i></span>
-                                <select name="cabang_id" class="form-select input-kfc border-start-0" required>
-                                    <option value="" selected disabled>-- Pilih Cabang --</option>
-                                    @foreach($cabang as $c)
-                                        <option value="{{ $c->id }}">{{ $c->nama_cabang }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                        <!-- 🔥 PILIH PEMBAYARAN -->
+                        <div class="mb-2">
+                            <label class="fw-bold small">Metode Pembayaran</label>
+
+                            <select name="metode_pembayaran" class="form-control" required>
+                                <option value="">-- Pilih Metode --</option>
+                                <option value="cash">Cash</option>
+                                <option value="qris">QRIS</option>
+                            </select>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label-custom">Menu Pesanan</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-2 border-end-0 rounded-start-3"><i class="fas fa-utensils text-danger"></i></span>
-                                <select name="menu_id" id="menu_id" class="form-select input-kfc border-start-0" required>
-                                    <option value="" selected disabled>-- Ketik atau Cari Menu --</option>
-                                    @foreach($menu as $m)
-                                        <option value="{{ $m->id }}" data-harga="{{ $m->harga }}" data-stok="{{ $m->stok }}">
-                                            {{ $m->nama_menu }} — Rp {{ number_format($m->harga, 0, ',', '.') }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row g-4 mb-4">
-                            <div class="col-md-4">
-                                <label class="form-label-custom">Kuantitas (Qty)</label>
-                                <input type="number" name="qty" id="qty" class="form-control input-kfc text-center fs-5 shadow-sm" min="1" value="1" required>
-                                <div id="stok_warning" class="mt-2 text-center fw-bold"></div>
-                            </div>
-
-                            <div class="col-md-8">
-                                <label class="form-label-custom">Ringkasan Total</label>
-                                <div class="total-box text-center shadow-sm">
-                                    <span class="small fw-bold text-muted d-block mb-1">TOTAL BAYAR (IDR)</span>
-                                    <h2 id="total_display" class="display-total">0</h2>
-                                    <input type="hidden" name="total" id="total_input">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 mt-5">
-                            <a href="{{ url('/dashboard') }}" class="text-decoration-none text-muted fw-bold order-2 order-md-1">
-                                <i class="fas fa-times me-1 text-danger"></i> Batalkan Pesanan
-                            </a>
-                            <button type="submit" id="btn-submit" class="btn btn-kfc-red px-5 shadow order-1 order-md-2 w-100 w-md-auto">
-                                <i class="fas fa-check-circle me-2"></i> Proses Transaksi
+                        <button class="btn btn-success w-100 mt-2">
+                            Checkout
+                        </button>
+                    {{-- </form>
+                            @csrf
+                            <button class="btn btn-success w-100 mt-2">
+                                Checkout
                             </button>
-                        </div>
-                    </form>
+                        </form> --}}
+                    </div>
+
+                    <!-- FORM MANUAL (TETAP ADA) -->
+                    <div class="cart-box">
+                        <h6>Manual Input</h6>
+
+                        <form action="{{ route('kasir.store') }}" method="POST">
+                            @csrf
+
+                            <select name="cabang_id" class="form-control mb-2" required>
+                                @foreach($cabang as $c)
+                                    <option value="{{ $c->id }}">{{ $c->nama_cabang }}</option>
+                                @endforeach
+                            </select>
+
+                            <select name="menu_id" class="form-control mb-2">
+                                @foreach($menu as $m)
+                                    <option value="{{ $m->id }}">{{ $m->nama_menu }}</option>
+                                @endforeach
+                            </select>
+
+                            <input type="number" name="qty" class="form-control mb-2" value="1">
+
+                            <button class="btn btn-danger w-100">
+                                Proses Manual
+                            </button>
+                        </form>
+
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
     </div>
+
 </div>
 
-<script>
-    const menuSelect = document.getElementById('menu_id');
-    const qtyInput = document.getElementById('qty');
-    const totalDisplay = document.getElementById('total_display');
-    const totalInput = document.getElementById('total_input');
-    const stokWarning = document.getElementById('stok_warning');
-    const btnSubmit = document.getElementById('btn-submit');
-
-    function formatRupiah(number) {
-        return new Intl.NumberFormat('id-ID', {
-            minimumFractionDigits: 0
-        }).format(number);
-    }
-
-    function hitungDanValidasi() {
-        if (menuSelect.selectedIndex <= 0) return;
-
-        const selectedOption = menuSelect.options[menuSelect.selectedIndex];
-        const harga = parseInt(selectedOption.getAttribute('data-harga')) || 0;
-        const stokTersedia = parseInt(selectedOption.getAttribute('data-stok')) || 0;
-        const qtyDiminta = parseInt(qtyInput.value) || 0;
-
-        // Hitung Total
-        const total = harga * qtyDiminta;
-        totalDisplay.innerText = formatRupiah(total);
-        totalInput.value = total;
-
-        // Validasi Stok
-        if (qtyDiminta > stokTersedia) {
-            stokWarning.innerHTML = `<span class="stok-bahaya"><i class="fas fa-times-circle me-1"></i> Stok Terbatas (${stokTersedia})</span>`;
-            qtyInput.style.borderColor = "#dc3545";
-            btnSubmit.disabled = true;
-        } else if (qtyDiminta > 0) {
-            stokWarning.innerHTML = `<span class="stok-aman"><i class="fas fa-check-circle me-1"></i> Tersedia (${stokTersedia})</span>`;
-            qtyInput.style.borderColor = "#eee";
-            btnSubmit.disabled = false;
-        } else {
-            btnSubmit.disabled = true;
-        }
-    }
-
-    menuSelect.addEventListener('change', hitungDanValidasi);
-    qtyInput.addEventListener('input', hitungDanValidasi);
-</script>
 @endsection

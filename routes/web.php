@@ -58,23 +58,25 @@ Route::middleware(['auth'])->group(function () {
     // Stok
     Route::resource('stok', StokController::class);
 
-    // 🔥 MENU (SEMUA USER BOLEH LIHAT & STOK)
+    // 🔥 MENU (SEMUA USER BOLEH LIHAT)
     Route::resource('menu', MenuController::class)->only(['index']);
 
-    // 🔥 STOK MENU
+    // 🔥 STOK BAHAN
     Route::get('/stok/bahan/create', [KasirController::class, 'createBahan'])->name('stok.bahan.create');
     Route::post('/stok/bahan/store', [KasirController::class, 'storeBahan'])->name('stok.bahan.store');
     Route::get('/stok/bahan/{id}/edit', [KasirController::class, 'editBahan'])->name('stok.bahan.edit');
     Route::put('/stok/bahan/{id}', [KasirController::class, 'updateBahan'])->name('stok.bahan.update');
     Route::delete('/stok/bahan/{id}', [KasirController::class, 'destroyBahan'])->name('stok.bahan.destroy');
-    // 🔥 tampilkan halaman form
-    Route::get('/menu/{id}/stok', [MenuController::class, 'editStok'])
-        ->name('menu.stok.edit');
 
-    // 🔥 proses submit
-    Route::post('/menu/{id}/stok', [MenuController::class, 'updateStok'])
-        ->name('menu.stok.update');
+    // 🔥 STOK MENU
+    Route::get('/menu/{id}/stok', [MenuController::class, 'editStok'])->name('menu.stok.edit');
+    Route::post('/menu/{id}/stok', [MenuController::class, 'updateStok'])->name('menu.stok.update');
 
+    // ================= 🔥 CART (PINDAH KE SINI) =================
+    Route::get('/cart', [KasirController::class, 'cart'])->name('cart');
+    Route::get('/cart/add/{id}', [KasirController::class, 'addToCart'])->name('cart.add');
+    Route::get('/cart/remove/{id}', [KasirController::class, 'removeCart'])->name('cart.remove');
+    Route::post('/checkout', [KasirController::class, 'checkout'])->name('checkout');
 });
 
 /*
@@ -94,6 +96,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // User Cabang
     Route::get('/user/create', [UserController::class, 'create'])->name('user.create');
     Route::post('/user/store', [UserController::class, 'store'])->name('user.store');
-    Route::resource('resep', ResepController::class);
 
+    // Resep
+    Route::resource('resep', ResepController::class);
 });

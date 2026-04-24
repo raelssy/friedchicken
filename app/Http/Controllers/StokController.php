@@ -13,21 +13,26 @@ use Illuminate\Support\Facades\Auth;
 class StokController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
+        $cabangs = Cabang::all();
+
         if ($user->role == 'admin') {
-            $menu = Menu::all();
-            $bahan = Bahan::all();
-            $reseps = Resep::all();
+            if ($request->cabang_id) {
+                $menus = Menu::where('cabang_id', $request->cabang_id)->with('cabang')->get();
+            } else {
+                $menus = Menu::with('cabang')->get();
+            }
         } else {
-            $menu = Menu::where('cabang_id', $user->cabang_id)->get();
-            $bahan = Bahan::where('id', $user->cabang_id)->get();
-            $reseps = Resep::where('cabang_id', $user->cabang_id)->get();
+            $menus = Menu::where('cabang_id', $user->cabang_id)->get();
         }
 
-        return view('stok.index', compact('menu', 'bahan', 'reseps'));
+        // 🔥 INI YANG KURANG
+        $bahan = Bahan::all();
+
+        return view('stok.index', compact('menus', 'cabangs', 'bahan'));
     }
 
     public function create()

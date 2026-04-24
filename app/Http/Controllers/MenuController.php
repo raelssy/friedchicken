@@ -32,35 +32,43 @@ class MenuController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        $request->validate([
-            'nama_menu' => 'required|string|max:255',
-            'harga' => 'required|integer|min:0',
-            'kategori' => 'required|string',
-            'cabang_id' => 'nullable'
-        ]);
+    $request->validate([
+        'nama_menu' => 'required|string|max:255',
+        'harga' => 'required|integer|min:0',
+        'kategori' => 'required|string',
+        'cabang_id' => 'nullable',
+        'gambar' => 'nullable|image|max:10240' 
+    ]);
 
-        $cabangId = $user->role == 'admin'
-            ? $request->cabang_id
-            : $user->cabang_id;
+    $cabangId = $user->role == 'admin'
+        ? $request->cabang_id
+        : $user->cabang_id;
 
-        if (!$cabangId) {
-            return back()->with('error', 'Cabang wajib dipilih');
-        }
-
-        Menu::create([
-            'nama_menu' => $request->nama_menu,
-            'harga' => $request->harga,
-            'kategori' => $request->kategori,
-            'stok' => 0,
-            'cabang_id' => $cabangId
-        ]);
-
-        return redirect()->route('menu.index')->with('success', 'Menu berhasil ditambahkan');
+    if (!$cabangId) {
+        return back()->with('error', 'Cabang wajib dipilih');
     }
 
+    // 🔥 HANDLE UPLOAD GAMBAR
+    $gambar = null;
+    if ($request->hasFile('gambar')) {
+        $gambar = $request->file('gambar')->store('menu', 'public');
+    }
+
+    Menu::create([
+        'nama_menu' => $request->nama_menu,
+        'harga' => $request->harga,
+        'kategori' => $request->kategori,
+        'stok' => 0,
+        'cabang_id' => $cabangId,
+        'gambar' => $gambar 
+    ]);
+
+    return redirect()->route('menu.index')
+        ->with('success', 'Menu berhasil ditambahkan');
+}
     public function edit($id)
     {
         $menu = Menu::findOrFail($id);

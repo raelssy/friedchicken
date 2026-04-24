@@ -7,7 +7,11 @@ use App\Models\Transaksi;
 use App\Models\Cabang;
 use App\Models\Menu;
 use App\Models\Bahan;
+use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use Midtrans\Config;
+use Midtrans\Snap;
 
 class KasirController extends Controller
 {
@@ -28,17 +32,25 @@ class KasirController extends Controller
         $menu = Menu::where('stok', '>', 0)->get();
         $cabang = Cabang::all();
 
-        return view('kasir.create', compact('menu', 'cabang'));
+        $cart = Cart::with('menu')
+            ->where('user_id', Auth::id())
+            ->get();
+
+        $totalCart = $cart->sum(function ($item) {
+            return $item->menu->harga * $item->qty;
+        });
+
+        return view('kasir.create', compact('menu', 'cabang', 'cart', 'totalCart'));
     }
 
     // =========================
-    // SIMPAN TRANSAKSI
+    // SIMPAN TRANSAKSI MANUAL
     // =========================
     public function store(Request $request)
     {
         $request->validate([
-            'cabang_id' => 'required|exists:cabangs,id', 
-            'menu_id'   => 'required|exists:menu,id',   
+            'cabang_id' => 'required|exists:cabangs,id',
+            'menu_id'   => 'required|exists:menu,id',
             'qty'       => 'required|numeric|min:1',
             'total'     => 'required|numeric',
         ]);
@@ -48,37 +60,34 @@ class KasirController extends Controller
         try {
             $menu = Menu::findOrFail($request->menu_id);
 
-            // 🔥 CEK STOK
             if ($menu->stok < $request->qty) {
-                return back()->with('error', 'Stok tidak mencukupi! Sisa: ' . $menu->stok);
+                return back()->with('error', 'Stok tidak mencukupi!');
             }
 
-            // 🔥 SIMPAN TRANSAKSI
             Transaksi::create([
                 'menu_id'   => $request->menu_id,
                 'cabang_id' => $request->cabang_id,
                 'qty'       => $request->qty,
                 'total'     => $request->total,
                 'tanggal'   => now()->toDateString(),
+                'metode_pembayaran' => 'cash'
             ]);
 
-            // 🔥 KURANGI STOK MENU
             $menu->decrement('stok', $request->qty);
 
             DB::commit();
 
             return redirect()->route('kasir.index')
-                ->with('success', 'Transaksi berhasil 🔥');
+                ->with('success', 'Transaksi berhasil');
 
         } catch (\Exception $e) {
             DB::rollback();
-
-            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     // =========================
-    // EDIT TRANSAKSI
+    // EDIT
     // =========================
     public function edit($id)
     {
@@ -90,12 +99,12 @@ class KasirController extends Controller
     }
 
     // =========================
-    // UPDATE TRANSAKSI
+    // UPDATE
     // =========================
     public function update(Request $request, $id)
     {
         $request->validate([
-            'menu_id' => 'required|exists:menus,id',
+            'menu_id' => 'required|exists:menu,id',
             'qty'     => 'required|numeric|min:1',
             'total'   => 'required|numeric'
         ]);
@@ -108,21 +117,14 @@ class KasirController extends Controller
             $menuLama = Menu::findOrFail($transaksi->menu_id);
             $menuBaru = Menu::findOrFail($request->menu_id);
 
-            // 🔥 KEMBALIKAN STOK LAMA
             $menuLama->increment('stok', $transaksi->qty);
 
-            // 🔥 CEK STOK BARU
             if ($menuBaru->stok < $request->qty) {
-                // rollback manual
-                $menuLama->decrement('stok', $transaksi->qty);
-
-                return back()->with('error', 'Stok menu tidak mencukupi!');
+                return back()->with('error', 'Stok tidak cukup!');
             }
 
-            // 🔥 KURANGI STOK BARU
             $menuBaru->decrement('stok', $request->qty);
 
-            // 🔥 UPDATE TRANSAKSI
             $transaksi->update([
                 'menu_id' => $request->menu_id,
                 'qty'     => $request->qty,
@@ -132,75 +134,119 @@ class KasirController extends Controller
             DB::commit();
 
             return redirect()->route('kasir.index')
-                ->with('success', 'Transaksi berhasil diupdate 🔥');
+                ->with('success', 'Update berhasil');
 
         } catch (\Exception $e) {
             DB::rollback();
-
-            return back()->with('error', 'Error: ' . $e->getMessage());
+            return back()->with('error', $e->getMessage());
         }
     }
 
     // =========================
-    // TAMBAH BAHAN
+    // CART
     // =========================
-    public function createBahan()
+    public function addToCart($id)
     {
-        $cabangs = Cabang::all();
-        return view('bahan.create', compact('cabangs'));
+        $user_id = Auth::id();
+
+        $cart = Cart::where('user_id', $user_id)
+                    ->where('menu_id', $id)
+                    ->first();
+
+        if ($cart) {
+            $cart->increment('qty');
+        } else {
+            Cart::create([
+                'user_id' => $user_id,
+                'menu_id' => $id,
+                'qty' => 1
+            ]);
+        }
+
+        return back();
     }
 
-    public function storeBahan(Request $request)
+    public function removeCart($id)
+    {
+        Cart::where('id', $id)->delete();
+        return back();
+    }
+
+    // =========================
+    // CHECKOUT (CASH + MIDTRANS)
+    // =========================
+    public function checkout(Request $request)
     {
         $request->validate([
-            'nama_bahan' => 'required|string|max:255',
-            'jumlah'     => 'required|numeric|min:0',
-            'satuan'     => 'required|string',
-            'cabang_id'  => 'required|exists:cabangs,id'
+            'metode_pembayaran' => 'required|in:cash,qris'
         ]);
 
-        Bahan::create($request->all());
+        $user_id = Auth::id();
 
-        return back()->with('success', 'Bahan berhasil ditambahkan!');
-    }
+        $cartItems = Cart::with('menu')
+            ->where('user_id', $user_id)
+            ->get();
 
-    // =========================
-    // EDIT BAHAN
-    // =========================
-    public function editBahan($id)
-    {
-        $bahan = Bahan::findOrFail($id);
-        return view('bahan.edit', compact('bahan'));
-    }
+        if ($cartItems->isEmpty()) {
+            return back()->with('error', 'Keranjang kosong');
+        }
 
-    public function updateBahan(Request $request, $id)
-    {
-        $request->validate([
-            'nama_bahan' => 'required|string|max:255',
-            'jumlah'     => 'required|numeric|min:0',
-            'satuan'     => 'required|string'
-        ]);
+        $total = $cartItems->sum(fn($i) => $i->menu->harga * $i->qty);
 
-        $bahan = Bahan::findOrFail($id);
+        // 🔥 MIDTRANS QRIS
+        if ($request->metode_pembayaran == 'qris') {
 
-        $bahan->update([
-            'nama_bahan' => $request->nama_bahan,
-            'jumlah'     => $request->jumlah,
-            'satuan'     => $request->satuan,
-        ]);
+            Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+            Config::$isProduction = false;
+            Config::$isSanitized = true;
+            Config::$is3ds = true;
 
-        return redirect()->route('stok.index')
-            ->with('success', 'Bahan berhasil diupdate!');
-    }
+            $params = [
+                'transaction_details' => [
+                    'order_id' => 'INV-' . time(),
+                    'gross_amount' => $total,
+                ],
+                'enabled_payments' => ['gopay', 'qris']
+            ];
 
-    // =========================
-    // HAPUS BAHAN
-    // =========================
-    public function destroyBahan($id)
-    {
-        $bahan = Bahan::findOrFail($id);
-        $bahan->delete();
+            $snapToken = Snap::getSnapToken($params);
 
-        return back()->with('success', 'Bahan berhasil dihapus!');
+            return view('kasir.payment', compact('snapToken'));
+        }
+
+        // 🔥 CASH
+        DB::beginTransaction();
+
+        try {
+            foreach ($cartItems as $item) {
+                $menu = $item->menu;
+
+                if ($menu->stok < $item->qty) {
+                    return back()->with('error', 'Stok tidak cukup');
+                }
+
+                $menu->decrement('stok', $item->qty);
+
+                Transaksi::create([
+                    'menu_id'   => $menu->id,
+                    'cabang_id' => $menu->cabang_id,
+                    'qty'       => $item->qty,
+                    'total'     => $menu->harga * $item->qty,
+                    'tanggal'   => now()->toDateString(),
+                    'metode_pembayaran' => 'cash'
+                ]);
+            }
+
+            Cart::where('user_id', $user_id)->delete();
+
+            DB::commit();
+
+            return redirect()->route('kasir.index')
+                ->with('success', 'Checkout Cash berhasil');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            return back()->with('error', $e->getMessage());
+        }
     }
 }
