@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Midtrans\Config as MidtransConfig;
+use Midtrans\Snap;
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\Cabang;
@@ -10,8 +11,7 @@ use App\Models\Bahan;
 use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Midtrans\Config;
-use Midtrans\Snap;
+
 
 class KasirController extends Controller
 {
@@ -196,10 +196,10 @@ class KasirController extends Controller
         // 🔥 MIDTRANS QRIS
         if ($request->metode_pembayaran == 'qris') {
 
-            Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-            Config::$isProduction = false;
-            Config::$isSanitized = true;
-            Config::$is3ds = true;
+            MidtransConfig::$serverKey = config('services.midtrans.server_key');
+            MidtransConfig::$isProduction = false;
+            MidtransConfig::$isSanitized = true;
+            MidtransConfig::$is3ds = true;
 
             $params = [
                 'transaction_details' => [
