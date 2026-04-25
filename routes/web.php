@@ -99,4 +99,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Resep
     Route::resource('resep', ResepController::class);
+
+
+    Route::get('/doku/return', [App\Http\Controllers\KasirController::class, 'dokuReturn']);
+    Route::post('/doku/callback', [App\Http\Controllers\DokuController::class, 'callback']);
 });

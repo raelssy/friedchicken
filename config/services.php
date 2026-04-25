@@ -6,12 +6,6 @@ return [
     |--------------------------------------------------------------------------
     | Third Party Services
     |--------------------------------------------------------------------------
-    |
-    | This file is for storing the credentials for third party services such
-    | as Mailgun, Postmark, AWS and more. This file provides the de facto
-    | location for this type of information, allowing packages to have
-    | a conventional file to locate the various service credentials.
-    |
     */
 
     'postmark' => [
@@ -37,15 +31,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Midtrans Payment Gateway
+    | DOKU Payment Gateway 🔥
     |--------------------------------------------------------------------------
     */
-    'midtrans' => [
-        'server_key' => env('MIDTRANS_SERVER_KEY'),
-        'client_key' => env('MIDTRANS_CLIENT_KEY'),
-        'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
-        'is_sanitized' => env('MIDTRANS_IS_SANITIZED', true),
-        'is_3ds' => env('MIDTRANS_IS_3DS', true),
+    'doku' => [
+        'client_id' => env('DOKU_CLIENT_ID'),
+        'secret_key' => env('DOKU_SECRET_KEY'),
+        'environment' => env('DOKU_ENV', 'sandbox'),
+
+        // 🔥 auto base url
+        'base_url' => env('DOKU_ENV') == 'production'
+            ? 'https://api.doku.com'
+            : 'https://api-sandbox.doku.com',
     ],
 
 ];

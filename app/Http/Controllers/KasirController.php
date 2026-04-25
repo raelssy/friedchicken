@@ -1,32 +1,24 @@
 <?php
 
 namespace App\Http\Controllers;
-use Midtrans\Config as MidtransConfig;
-use Midtrans\Snap;
+
 use Illuminate\Http\Request;
 use App\Models\Transaksi;
 use App\Models\Cabang;
 use App\Models\Menu;
-use App\Models\Bahan;
 use App\Models\Cart;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Http;
 
 class KasirController extends Controller
 {
-    // =========================
-    // LIST TRANSAKSI
-    // =========================
     public function index()
     {
         $transaksi = Transaksi::with('menu')->latest()->get();
         return view('kasir.index', compact('transaksi'));
     }
 
-    // =========================
-    // FORM TRANSAKSI
-    // =========================
     public function create()
     {
         $menu = Menu::where('stok', '>', 0)->get();
@@ -36,115 +28,11 @@ class KasirController extends Controller
             ->where('user_id', Auth::id())
             ->get();
 
-        $totalCart = $cart->sum(function ($item) {
-            return $item->menu->harga * $item->qty;
-        });
+        $totalCart = $cart->sum(fn($i) => $i->menu->harga * $i->qty);
 
         return view('kasir.create', compact('menu', 'cabang', 'cart', 'totalCart'));
     }
 
-    // =========================
-    // SIMPAN TRANSAKSI MANUAL
-    // =========================
-    public function store(Request $request)
-    {
-        $request->validate([
-            'cabang_id' => 'required|exists:cabangs,id',
-            'menu_id'   => 'required|exists:menu,id',
-            'qty'       => 'required|numeric|min:1',
-            'total'     => 'required|numeric',
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            $menu = Menu::findOrFail($request->menu_id);
-
-            if ($menu->stok < $request->qty) {
-                return back()->with('error', 'Stok tidak mencukupi!');
-            }
-
-            Transaksi::create([
-                'menu_id'   => $request->menu_id,
-                'cabang_id' => $request->cabang_id,
-                'qty'       => $request->qty,
-                'total'     => $request->total,
-                'tanggal'   => now()->toDateString(),
-                'metode_pembayaran' => 'cash'
-            ]);
-
-            $menu->decrement('stok', $request->qty);
-
-            DB::commit();
-
-            return redirect()->route('kasir.index')
-                ->with('success', 'Transaksi berhasil');
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    // =========================
-    // EDIT
-    // =========================
-    public function edit($id)
-    {
-        $transaksi = Transaksi::findOrFail($id);
-        $menu = Menu::all();
-        $cabang = Cabang::all();
-
-        return view('kasir.edit', compact('transaksi', 'menu', 'cabang'));
-    }
-
-    // =========================
-    // UPDATE
-    // =========================
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'menu_id' => 'required|exists:menu,id',
-            'qty'     => 'required|numeric|min:1',
-            'total'   => 'required|numeric'
-        ]);
-
-        DB::beginTransaction();
-
-        try {
-            $transaksi = Transaksi::findOrFail($id);
-
-            $menuLama = Menu::findOrFail($transaksi->menu_id);
-            $menuBaru = Menu::findOrFail($request->menu_id);
-
-            $menuLama->increment('stok', $transaksi->qty);
-
-            if ($menuBaru->stok < $request->qty) {
-                return back()->with('error', 'Stok tidak cukup!');
-            }
-
-            $menuBaru->decrement('stok', $request->qty);
-
-            $transaksi->update([
-                'menu_id' => $request->menu_id,
-                'qty'     => $request->qty,
-                'total'   => $request->total
-            ]);
-
-            DB::commit();
-
-            return redirect()->route('kasir.index')
-                ->with('success', 'Update berhasil');
-
-        } catch (\Exception $e) {
-            DB::rollback();
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    // =========================
-    // CART
-    // =========================
     public function addToCart($id)
     {
         $user_id = Auth::id();
@@ -172,9 +60,6 @@ class KasirController extends Controller
         return back();
     }
 
-    // =========================
-    // CHECKOUT (CASH + MIDTRANS)
-    // =========================
     public function checkout(Request $request)
     {
         $request->validate([
@@ -193,60 +78,132 @@ class KasirController extends Controller
 
         $total = $cartItems->sum(fn($i) => $i->menu->harga * $i->qty);
 
-        // 🔥 MIDTRANS QRIS
-        if ($request->metode_pembayaran == 'qris') {
+        // =========================
+        // CASH (LANGSUNG)
+        // =========================
+        if ($request->metode_pembayaran == 'cash') {
 
-            MidtransConfig::$serverKey = config('services.midtrans.server_key');
-            MidtransConfig::$isProduction = false;
-            MidtransConfig::$isSanitized = true;
-            MidtransConfig::$is3ds = true;
+            DB::beginTransaction();
 
-            $params = [
-                'transaction_details' => [
-                    'order_id' => 'INV-' . time(),
-                    'gross_amount' => $total,
-                ],
-                'enabled_payments' => ['gopay', 'qris']
-            ];
+            try {
+                foreach ($cartItems as $item) {
+                    $menu = $item->menu;
 
-            $snapToken = Snap::getSnapToken($params);
+                    if ($menu->stok < $item->qty) {
+                        return back()->with('error', 'Stok tidak cukup');
+                    }
 
-            return view('kasir.payment', compact('snapToken'));
-        }
+                    $menu->decrement('stok', $item->qty);
 
-        // 🔥 CASH
-        DB::beginTransaction();
-
-        try {
-            foreach ($cartItems as $item) {
-                $menu = $item->menu;
-
-                if ($menu->stok < $item->qty) {
-                    return back()->with('error', 'Stok tidak cukup');
+                    Transaksi::create([
+                        'invoice'  => 'INV-' . time(),
+                        'menu_id'  => $menu->id,
+                        'cabang_id'=> $menu->cabang_id,
+                        'qty'      => $item->qty,
+                        'total'    => $menu->harga * $item->qty,
+                        'tanggal'  => now(),
+                        'metode_pembayaran' => 'cash',
+                        'status'   => 'success'
+                    ]);
                 }
 
-                $menu->decrement('stok', $item->qty);
+                Cart::where('user_id', $user_id)->delete();
 
-                Transaksi::create([
-                    'menu_id'   => $menu->id,
-                    'cabang_id' => $menu->cabang_id,
-                    'qty'       => $item->qty,
-                    'total'     => $menu->harga * $item->qty,
-                    'tanggal'   => now()->toDateString(),
-                    'metode_pembayaran' => 'cash'
-                ]);
+                DB::commit();
+
+                return redirect()->route('kasir.index')->with('success', 'Cash berhasil');
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                return back()->with('error', $e->getMessage());
             }
+        }
 
-            Cart::where('user_id', $user_id)->delete();
+        // =========================
+        // 🔥 QRIS DOKU (PENDING)
+        // =========================
+        if ($request->metode_pembayaran == 'qris') {
 
-            DB::commit();
+            DB::beginTransaction();
 
-            return redirect()->route('kasir.index')
-                ->with('success', 'Checkout Cash berhasil');
+            try {
 
-        } catch (\Exception $e) {
-            DB::rollback();
-            return back()->with('error', $e->getMessage());
+                $invoice = 'INV-' . time();
+
+                // 🔥 SIMPAN TRANSAKSI PENDING
+                foreach ($cartItems as $item) {
+                    Transaksi::create([
+                        'invoice'  => $invoice,
+                        'menu_id'  => $item->menu_id,
+                        'cabang_id'=> $item->menu->cabang_id,
+                        'qty'      => $item->qty,
+                        'total'    => $item->menu->harga * $item->qty,
+                        'tanggal'  => now(),
+                        'metode_pembayaran' => 'qris',
+                        'status'   => 'pending'
+                    ]);
+                }
+
+                DB::commit();
+
+                // =========================
+                // KIRIM KE DOKU
+                // =========================
+                $clientId = config('services.doku.client_id');
+                $secretKey = config('services.doku.secret_key');
+                $baseUrl = config('services.doku.base_url');
+
+                $timestamp = gmdate('Y-m-d\TH:i:s\Z');
+                $requestId = uniqid();
+
+                $user = Auth::user();
+
+                $body = [
+                    "order" => [
+                        "invoice_number" => $invoice,
+                        "amount" => (int) $total
+                    ],
+                    "payment" => [
+                        "payment_due_date" => 60
+                    ],
+                    "customer" => [
+                        "name" => $user->name,
+                        "email" => $user->email
+                    ]
+                ];
+
+                $jsonBody = json_encode($body);
+                $digest = base64_encode(hash('sha256', $jsonBody, true));
+                $requestTarget = '/checkout/v1/payment';
+
+                $signature = base64_encode(hash_hmac(
+                    'sha256',
+                    "Client-Id:$clientId\nRequest-Id:$requestId\nRequest-Timestamp:$timestamp\nRequest-Target:$requestTarget\nDigest:$digest",
+                    $secretKey,
+                    true
+                ));
+
+                $response = Http::withHeaders([
+                    'Client-Id' => $clientId,
+                    'Request-Id' => $requestId,
+                    'Request-Timestamp' => $timestamp,
+                    'Signature' => "HMACSHA256=$signature",
+                    'Digest' => $digest,
+                    'Content-Type' => 'application/json'
+                ])->post($baseUrl . $requestTarget, $body);
+
+                if ($response->failed()) {
+                    return back()->with('error', $response->body());
+                }
+
+                $paymentUrl = $response['response']['payment']['url'];
+
+                return redirect($paymentUrl);
+
+            } catch (\Exception $e) {
+                DB::rollback();
+                return back()->with('error', $e->getMessage());
+            }
         }
     }
 }
