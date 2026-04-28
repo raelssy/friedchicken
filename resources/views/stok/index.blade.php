@@ -151,6 +151,7 @@
 
                 <!-- TABLE -->
                 <div class="card-body p-0">
+                    <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="thead-custom">
                         <tr>
@@ -201,6 +202,7 @@
                         </tbody>
                     </table>
                 </div>
+                </div>
 
             </div>
 
@@ -223,6 +225,7 @@
                 </div>
 
                 <div class="card-body p-0">
+                    <div class="table-responsive">
                     <table class="table table-hover mb-0">
                         <thead class="thead-custom">
                             <tr>
@@ -262,6 +265,7 @@
                             @endforelse
                         </tbody>
                     </table>
+                </div>
                 </div>
 
             </div>

@@ -9,6 +9,8 @@ use App\Models\Resep;
 use App\Models\Bahan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+
 
 class MenuController extends Controller
 {
@@ -32,43 +34,44 @@ class MenuController extends Controller
     }
 
     public function store(Request $request)
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $request->validate([
-        'nama_menu' => 'required|string|max:255',
-        'harga' => 'required|integer|min:0',
-        'kategori' => 'required|string',
-        'cabang_id' => 'nullable',
-        'gambar' => 'nullable|image|max:10240' 
-    ]);
+        $request->validate([
+            'nama_menu' => 'required|string|max:255',
+            'harga' => 'required|integer|min:0',
+            'kategori' => 'required|string',
+            'cabang_id' => 'nullable',
+            'gambar' => 'nullable|image|max:10240'
+        ]);
 
-    $cabangId = $user->role == 'admin'
-        ? $request->cabang_id
-        : $user->cabang_id;
+        $cabangId = $user->role == 'admin'
+            ? $request->cabang_id
+            : $user->cabang_id;
 
-    if (!$cabangId) {
-        return back()->with('error', 'Cabang wajib dipilih');
+        if (!$cabangId) {
+            return back()->with('error', 'Cabang wajib dipilih');
+        }
+
+        // 🔥 HANDLE GAMBAR
+        $gambar = null;
+        if ($request->file('gambar')) {
+            $gambar = $request->file('gambar')->store('menu', 'public');
+        }
+
+        Menu::create([
+            'nama_menu' => $request->nama_menu,
+            'harga' => $request->harga,
+            'kategori' => $request->kategori,
+            'stok' => 0,
+            'cabang_id' => $cabangId,
+            'gambar' => $gambar
+        ]);
+
+        return redirect()->route('menu.index')
+            ->with('success', 'Menu berhasil ditambahkan');
     }
 
-    // 🔥 HANDLE UPLOAD GAMBAR
-    $gambar = null;
-    if ($request->hasFile('gambar')) {
-        $gambar = $request->file('gambar')->store('menu', 'public');
-    }
-
-    Menu::create([
-        'nama_menu' => $request->nama_menu,
-        'harga' => $request->harga,
-        'kategori' => $request->kategori,
-        'stok' => 0,
-        'cabang_id' => $cabangId,
-        'gambar' => $gambar 
-    ]);
-
-    return redirect()->route('menu.index')
-        ->with('success', 'Menu berhasil ditambahkan');
-}
     public function edit($id)
     {
         $menu = Menu::findOrFail($id);
@@ -83,31 +86,38 @@ class MenuController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $menu = Menu::findOrFail($id);
-        $user = Auth::user();
+{
+    $menu = Menu::findOrFail($id);
 
-        if ($user->role != 'admin' &&
-            $menu->cabang_id != $user->cabang_id) {
-            abort(403);
-        }
+    // 🔥 UPDATE DATA DULU
+    $menu->nama_menu = $request->nama_menu;
+    $menu->harga = $request->harga;
+    $menu->stok = $request->stok;
+    $menu->kategori = $request->kategori;
 
-        $request->validate([
-            'nama_menu' => 'required|string|max:255',
-            'harga' => 'required|integer|min:0',
-            'kategori' => 'required|string',
-        ]);
 
-        $menu->update([
-            'nama_menu' => $request->nama_menu,
-            'harga' => $request->harga,
-            'kategori' => $request->kategori
-        ]);
+    // 🔥 UPLOAD GAMBAR
+    if ($request->file('gambar')) {
 
-        return redirect()->route('menu.index')->with('success', 'Menu berhasil diupdate');
+        $file = $request->file('gambar');
+
+        $nama = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+
+        Storage::disk('public')->putFileAs('menu', $file, $nama);
+
+        $menu->gambar = 'menu/' . $nama;
+
+        $menu->gambar = 'menu/' . $nama;
     }
 
-    public function destroy($id)
+    // 🔥 SAVE TERAKHIR
+    $menu->save();
+
+    return redirect()->route('menu.index')->with('success', 'Berhasil update');
+}
+
+
+    public function destroy($id)    
     {
         $menu = Menu::findOrFail($id);
         $user = Auth::user();
@@ -119,7 +129,8 @@ class MenuController extends Controller
 
         $menu->delete();
 
-        return redirect()->route('menu.index')->with('success', 'Menu berhasil dihapus');
+        return redirect()->route('menu.index')
+            ->with('success', 'Menu berhasil dihapus');
     }
 
     public function editStok($id)
@@ -135,9 +146,6 @@ class MenuController extends Controller
         return view('menu.stok', compact('menu'));
     }
 
-    // =========================
-    // UPDATE STOK (FIX FINAL)
-    // =========================
     public function updateStok(Request $request, $id)
     {
         $jumlahInput = (float) $request->stok;
@@ -154,9 +162,6 @@ class MenuController extends Controller
 
         $utama = (float) $resepUtama->jumlah;
 
-        // =========================
-        // 🔥 STEP 1: CEK DULU SEMUA BAHAN
-        // =========================
         foreach ($reseps as $resep) {
 
             $bahan = Bahan::find($resep->bahan_id);
@@ -169,17 +174,13 @@ class MenuController extends Controller
                 $kurang = ($resep->jumlah / $utama) * $jumlahInput;
             }
 
-            // ❌ JIKA TIDAK CUKUP
             if ($bahan->jumlah < $kurang) {
-                return back()->with('error', 
+                return back()->with('error',
                     'Stok bahan "' . $bahan->nama_bahan . '" tidak cukup!'
                 );
             }
         }
 
-        // =========================
-        // 🔥 STEP 2: BARU KURANGI
-        // =========================
         DB::beginTransaction();
 
         try {
@@ -200,7 +201,6 @@ class MenuController extends Controller
                 $bahan->save();
             }
 
-            // 🔥 tambah stok menu
             $menu->stok += $jumlahInput;
             $menu->save();
 

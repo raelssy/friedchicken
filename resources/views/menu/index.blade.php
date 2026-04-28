@@ -157,97 +157,93 @@
 
 <div class="card card-tabel shadow-lg">
     <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="thead-kuning text-nowrap">
-                    <tr>
-                        <th class="ps-4" width="60px">No</th>
-                        <th>Nama Menu</th>
-                        <th>Kategori</th>
-                        <th>Harga</th>
-                        <th class="text-center">Stok</th>
-                        <th class="text-center">Cart</th>
-                        @if(auth()->user()->role == 'admin')
-                        <th width="150px" class="text-center pe-4">Aksi</th>
-                        @endif
-                    </tr>
-                </thead>
+        <div class="row">
 
-                <tbody class="text-nowrap">
-                    @forelse($menu as $m)
-                    <tr>
-                        <td class="ps-4 fw-bold text-muted">{{ $loop->iteration }}</td>
+                @forelse($menu as $m)
+                <div class="col-md-4 col-sm-6 mb-4">
 
-                        <td>
-                            <span class="fw-bold text-dark">{{ $m->nama_menu }}</span>
-                        </td>
+                    <div class="card border-0 shadow-sm rounded-4 h-100">
 
-                        <td>
-                            <span class="badge rounded-pill badge-custom {{ $m->kategori == 'Makanan' ? 'badge-makanan' : 'badge-minuman' }}">
-                                <i class="fas {{ $m->kategori == 'Makanan' ? 'fa-hamburger' : 'fa-glass-cheers' }} me-1"></i>
+                        <!-- GAMBAR -->
+                        <img src="{{ $m->gambar 
+                            ? asset('storage/' . $m->gambar) 
+                            : asset('images/default.png') }}"
+                            style="width:100%; height:200px; object-fit:cover;">
+
+                        <div class="card-body d-flex flex-column text-center p-3">
+
+                            <!-- NAMA -->
+                            <h5 class="fw-bold">{{ $m->nama_menu }}</h5>
+
+                            <!-- KATEGORI -->
+                            <span class="badge rounded-pill mb-2 badge-custom 
+                                {{ $m->kategori == 'Makanan' ? 'badge-makanan' : 'badge-minuman' }}">
                                 {{ $m->kategori }}
                             </span>
-                        </td>
 
-                        <td class="fw-bold text-danger">
-                            Rp{{ number_format($m->harga, 0, ',', '.') }}
-                        </td>
-                        
-                        <td class="text-center">
+                            <!-- HARGA -->
+                            <p class="fw-bold text-danger mb-1">
+                                Rp{{ number_format($m->harga, 0, ',', '.') }}
+                            </p>
+
+                            <!-- STOK -->
                             @if($m->stok <= 5)
-                                <span class="badge stok-kritis rounded-pill badge-custom">
-                                    <i class="fas fa-exclamation-circle me-1"></i> {{ $m->stok }}
+                                <span class="badge stok-kritis mb-2">
+                                    Stok: {{ $m->stok }}
                                 </span>
                             @else
-                                <span class="badge stok-aman rounded-pill badge-custom">
-                                    {{ $m->stok }}
+                                <span class="badge stok-aman mb-2">
+                                    Stok: {{ $m->stok }}
                                 </span>
                             @endif
-                        </td>
 
-                        <!-- 🛒 CART -->
-                        <td class="text-center">
-                            @if($m->stok > 0)
-                                <a href="{{ route('cart.add', $m->id) }}" class="btn btn-add-cart btn-sm">
-                                    <i class="fas fa-cart-plus"></i>
-                                </a>
-                            @else
-                                <span class="text-muted">Habis</span>
-                            @endif
-                        </td>
+                            <!-- CART -->
+                            <div class="mb-2">
+                                @if($m->stok > 0)
+                                    <a href="{{ route('cart.add', $m->id) }}" 
+                                    class="btn btn-add-cart btn-sm w-100">
+                                        <i class="fas fa-cart-plus"></i> Tambah
+                                    </a>
+                                @else
+                                    <span class="text-muted">Stok Habis</span>
+                                @endif
+                            </div>
 
-                        @if(auth()->user()->role == 'admin')
-                        <td class="text-center pe-4">
-                            <div class="btn-group">
+                            <!-- AKSI ADMIN -->
+                            @if(auth()->user()->role == 'admin')
+                            <div class="d-flex justify-content-center gap-2">
 
-                                <a href="{{ route('menu.edit', $m->id) }}" class="btn btn-edit btn-sm px-3">
+                                <a href="{{ route('menu.edit', $m->id) }}" 
+                                class="btn btn-edit btn-sm">
                                     <i class="fa fa-edit"></i>
                                 </a>
 
-                                <form action="{{ route('menu.destroy', $m->id) }}" method="POST" style="display:inline" onsubmit="return confirm('Yakin ingin menghapus menu ini?')">
+                                <form action="{{ route('menu.destroy', $m->id) }}" 
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-hapus btn-sm px-3">
+
+                                    <button class="btn btn-hapus btn-sm">
                                         <i class="fa fa-trash"></i>
-                                    </button>   
+                                    </button>
                                 </form>
 
                             </div>
-                        </td>
-                        @endif
+                            @endif
 
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="text-center text-muted p-5">
-                            <i class="fas fa-cookie-bite fa-2x mb-3 opacity-25"></i>
-                            <p class="mb-0 small fw-bold">Belum ada data menu tersedia.</p>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
+                        </div>
+                    </div>
 
-            </table>
+                </div>
+                @empty
+                <div class="text-center text-muted mt-5">
+                    <i class="fas fa-cookie-bite fa-2x mb-3"></i>
+                    <p>Belum ada menu</p>
+                </div>
+                @endforelse
+
+            </div>
         </div>
     </div>
 </div>

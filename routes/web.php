@@ -18,6 +18,15 @@ use App\Http\Controllers\LaporanController;
 | PUBLIC
 |--------------------------------------------------------------------------
 */
+Route::get('/storage/{path}', function ($path) {
+    $fullPath = storage_path('app/public/' . $path);
+
+    if (!file_exists($fullPath)) {
+        abort(404);
+    }
+
+    return response()->file($fullPath);
+})->where('path', '.*');
 
 Route::get('/', function () {
     return redirect('/login');
@@ -93,6 +102,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Menu FULL (admin only)
     Route::resource('menu', MenuController::class)->except(['index']);
+    //Route::put('/menu/{id}', [MenuController::class, 'update'])->name('menu.update');
 
     // User Cabang
     Route::get('/user/create', [UserController::class, 'create'])->name('user.create');

@@ -110,7 +110,9 @@
             </div>
 
             <div class="card-body p-4">
-                <form action="{{ route('menu.update', $menu->id) }}" method="POST">
+                <form action="{{ route('menu.update', $menu->id) }}" 
+                    method="POST" 
+                    enctype="multipart/form-data">
                     @csrf
                     @method('PUT')
 
@@ -144,6 +146,22 @@
                             <option value="Minuman" {{ $menu->kategori == 'Minuman' ? 'selected' : '' }}>Minuman</option>
                             <option value="Paket" {{ $menu->kategori == 'Paket' ? 'selected' : '' }}>Paket Combo</option>
                         </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="label-sm">Gambar Saat Ini</label><br>
+                        @if($menu->gambar)
+                            <img src="{{ asset('storage/' . $menu->gambar) }}?v={{ time() }}" 
+                                width="120" class="rounded mb-2">
+                        @else
+                            <img src="https://via.placeholder.com/120x80?text=No+Image" 
+                                class="rounded mb-2">
+                        @endif
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="label-sm">Ganti Gambar</label>
+                        <input type="file" name="gambar" class="form-control form-control-sm-custom">
                     </div>
 
                     <div class="d-grid gap-2">
