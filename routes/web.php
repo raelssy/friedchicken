@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ResepController;
+use App\Http\Controllers\LaporanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -100,7 +101,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     // Resep
     Route::resource('resep', ResepController::class);
 
+    Route::get('/laporan', [App\Http\Controllers\LaporanController::class, 'index'])
+    ->name('laporan.index');
+
 
     Route::get('/doku/return', [App\Http\Controllers\KasirController::class, 'dokuReturn']);
     Route::post('/doku/callback', [App\Http\Controllers\DokuController::class, 'callback']);
+
+    Route::get('/laporan/pdf', [LaporanController::class, 'exportPdf'])->name('laporan.pdf');
+    Route::get('/laporan/excel', [LaporanController::class, 'exportExcel'])->name('laporan.excel');
 });

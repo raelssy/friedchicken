@@ -196,6 +196,14 @@
         <span class="label-shortcut">User Cabang</span>
     </a>
 
+    <a href="{{ route('laporan.index') }}" class="shortcut-item flex-item">
+        <div class="lingkaran-ikon">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <span class="label-shortcut">Laporan Keuangan</span>
+    </a>
+
+
     @endif
 
 
