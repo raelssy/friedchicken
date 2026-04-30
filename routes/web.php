@@ -13,6 +13,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ResepController;
 use App\Http\Controllers\LaporanController;
 
+use App\Http\Controllers\DokuController;
+
+Route::post('/doku/notification', [DokuController::class, 'handleNotification']);
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES

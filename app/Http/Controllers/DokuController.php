@@ -87,4 +87,12 @@ class DokuController extends Controller
             ]);
         }
     }
+
+    public function handleNotification(Request $request) {
+        // Mencatat data yang masuk ke storage/logs/laravel.log
+        \Log::info('DOKU Notification:', $request->all());
+
+        // Berikan respon balik ke DOKU agar mereka berhenti mengirim notifikasi
+        return response()->json(['status' => 'SUCCESS']);
+    }
 }

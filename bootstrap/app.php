@@ -15,7 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/doku/notification', // Masukkan endpoint yang kamu tulis di dashboard DOKU tadi
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
+
+    
