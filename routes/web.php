@@ -15,7 +15,8 @@ use App\Http\Controllers\LaporanController;
 
 use App\Http\Controllers\DokuController;
 
-Route::post('/doku/notification', [DokuController::class, 'handleNotification']);
+// Doku Payment Gateway Webhook (Harus di luar Auth Middleware)
+Route::post('/doku/callback', [DokuController::class, 'callback']);
 
 /*
 |--------------------------------------------------------------------------
@@ -119,5 +120,4 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Doku Payment Gateway
     Route::get('/doku/return', [KasirController::class, 'dokuReturn']);
-    Route::post('/doku/callback', [App\Http\Controllers\DokuController::class, 'callback']);
 });

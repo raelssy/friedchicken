@@ -17,7 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->validateCsrfTokens(except: [
-            'api/doku/notification', // Masukkan endpoint yang kamu tulis di dashboard DOKU tadi
+            'doku/callback', // Endpoint Webhook DOKU
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -13,7 +13,10 @@ class Transaksi extends Model
         'menu_id',
         'qty',
         'tanggal',
-        'total'
+        'total',
+        'invoice',
+        'metode_pembayaran',
+        'status'
     ];
 
  

@@ -178,6 +178,7 @@ class KasirController extends Controller
                         'status'            => 'pending'
                     ]);
                 }
+                Cart::where('user_id', $user_id)->delete(); // 🔥 KOSONGKAN KERANJANG SETELAH CHECKOUT QRIS
                 DB::commit();
                 
                 // Integrasi DOKU tetap dipertahankan
@@ -188,7 +189,11 @@ class KasirController extends Controller
                 $requestId = uniqid();
                 $user = Auth::user();
                 $body = [
-                    "order" => ["invoice_number" => $invoice, "amount" => (int) $total],
+                    "order" => [
+                        "invoice_number" => $invoice, 
+                        "amount" => (int) $total,
+                        "callback_url" => url('/kasir')
+                    ],
                     "payment" => ["payment_due_date" => 60],
                     "customer" => ["name" => $user->name, "email" => $user->email]
                 ];
